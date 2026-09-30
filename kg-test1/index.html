@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nextwave Studio | Ideas You Can Walk Into</title>
+    <meta name="description" content="A small studio for big, strange, useful ideas." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- ───────── Header ───────── -->
+    <header class="header">
+      <a href="#top" class="header__logo" data-glide>NEXTWAVE STUDIO</a>
+      <div class="header__right">
+        <span class="header__clock"><span class="header__slash">/</span> <span id="clock">Seoul, KR – 00:00</span></span>
+        <nav class="menu" id="menu">
+          <button class="menu__pill" aria-expanded="false" aria-controls="menu-panel">
+            <span class="menu__icon"><i></i><i></i><i></i></span>
+            <span class="menu__label">menu</span>
+          </button>
+          <ul class="menu__panel" id="menu-panel">
+            <li><a href="#about" data-glide>About</a></li>
+            <li><a href="#practices" data-glide>What we do</a></li>
+            <li><a href="#works" data-glide>Projects</a></li>
+            <li><a href="#for-you" data-glide>For you</a></li>
+            <li><a href="#connect" data-glide>Connect</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- ───────── 01 Hero ───────── -->
+      <section class="hero" data-bg="white">
+        <h1 class="hero__title" aria-label="Build the next wave">
+          <span class="hero__line"><span>BUILD THE</span></span>
+          <span class="hero__line"><span>NEXT WAVE</span></span>
+        </h1>
+        <p class="hero__tagline">A small studio for big,<br />strange, useful ideas.</p>
+        <figure class="hero__media">
+          <img src="/images/hero.webp" alt="Portrait in a sculptural ribbon headpiece before a painted moon backdrop" />
+        </figure>
+      </section>
+
+      <!-- ───────── Statement ───────── -->
+      <section class="statement" id="about">
+        <h2 class="statement__text" data-reveal>Ideas you can walk into.</h2>
+        <div class="statement__landing" aria-hidden="true"></div>
+      </section>
+
+      <!-- ───────── 02 Positioning ───────── -->
+      <section class="positioning">
+        <div class="label-row" data-line>
+          <span class="label-row__name"><i></i>About the studio</span>
+          <span class="label-row__num">02</span>
+        </div>
+        <p class="positioning__lead" data-split>
+          We turn early ideas into things people can see, touch, and remember.
+        </p>
+        <p class="positioning__body" data-reveal>
+          From the first sketch to opening night, we handle concept, design, production and
+          launch in one team. Designers, writers, engineers and set builders sit at the same
+          table, so nothing gets lost between handoffs. Replace this paragraph with a short,
+          plain description of your own service.
+        </p>
+      </section>
+
+      <!-- ───────── 03 Mask reveal (sticky) ───────── -->
+      <section class="shift" aria-label="Make it real">
+        <div class="shift__sticky">
+          <img class="shift__image" src="/images/shift.webp" alt="" aria-hidden="true" />
+          <div class="shift__notes">
+            <div class="note" style="--top:30%;--left:8%;--r:-3deg"><p>Start with a question, not a brief.</p></div>
+            <div class="note" style="--top:60%;--left:26%;--r:2deg"><p>Prototype early. Prototype loudly.</p></div>
+            <div class="note" style="--top:32%;--left:45%;--r:-2deg"><p>Good work is felt before it is understood.</p></div>
+            <div class="note" style="--top:58%;--left:67%;--r:3deg"><p>Every project gets at least one wild idea.</p></div>
+            <div class="note" style="--top:22%;--left:80%;--r:-3deg"><p>Ship it, then make it better.</p></div>
+          </div>
+          <div class="shift__mask">
+            <svg viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs>
+                <mask id="shift-mask" maskUnits="userSpaceOnUse" x="-1000" y="-720" width="3000" height="2000">
+                  <rect x="-1000" y="-720" width="3000" height="2000" fill="white" />
+                  <text id="shift-text" x="500" y="280" text-anchor="middle" dominant-baseline="central" fill="black">MAKE IT REAL</text>
+                </mask>
+              </defs>
+              <rect x="-1000" y="-720" width="3000" height="2000" fill="#ffffff" mask="url(#shift-mask)" />
+            </svg>
+          </div>
+          <div class="shift__hint"><span>Scroll</span><i></i></div>
+        </div>
+      </section>
+
+      <!-- ───────── 03 Practices ───────── -->
+      <section class="practices" id="practices" data-bg="cream">
+        <div class="label-row" data-line>
+          <span class="label-row__name"><i></i>What we do</span>
+          <span class="label-row__num">03</span>
+        </div>
+        <div class="practices__head">
+          <h2 class="practices__title" data-reveal>Nine ways<br />we can help.</h2>
+          <p class="practices__intro" data-reveal>Pick one, or mix a few. Most projects use three or four.</p>
+        </div>
+        <div class="practices__carousel">
+          <button class="round-btn practices__prev" aria-label="Previous practice">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <div class="swiper">
+            <div class="swiper-wrapper">
+              <article class="swiper-slide practice"><h3>Strategy</h3><p>Positioning, naming, roadmaps</p><img src="/images/practice-1.webp" alt="" /></article>
+              <article class="swiper-slide practice"><h3>Identity</h3><p>Logos, type, visual systems</p><img src="/images/practice-2.webp" alt="" /></article>
+              <article class="swiper-slide practice"><h3>Spaces</h3><p>Pop-ups, booths, installations</p><img src="/images/practice-3.webp" alt="" /></article>
+              <article class="swiper-slide practice"><h3>Film</h3><p>Launch films, loops, behind the scenes</p><img src="/images/practice-4.webp" alt="" /></article>
+              <article class="swiper-slide practice"><h3>Digital</h3><p>Sites, apps, interactive toys</p><img src="/images/practice-5.webp" alt="" /></article>
+              <article class="swiper-slide practice"><h3>Events</h3><p>Launch nights, tours, festivals</p><img src="/images/practice-6.webp" alt="" /></article>
+              <article class="swiper-slide practice"><h3>Workshops</h3><p>Hands-on sessions for teams</p><img src="/images/practice-7.webp" alt="" /></article>
+              <article class="swiper-slide practice"><h3>Print</h3><p>Books, zines, posters, packaging</p><img src="/images/practice-8.webp" alt="" /></article>
+              <article class="swiper-slide practice"><h3>Research</h3><p>Interviews, testing, trend scans</p><img src="/images/practice-9.webp" alt="" /></article>
+            </div>
+          </div>
+          <button class="round-btn practices__next" aria-label="Next practice">
+            <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
+          <div class="practices__dots"></div>
+        </div>
+      </section>
+
+      <!-- ───────── 04 Play ───────── -->
+      <section class="play">
+        <div class="label-row" data-line>
+          <span class="label-row__name"><i></i>Open studio</span>
+          <span class="label-row__num">04</span>
+        </div>
+        <div class="play__stage">
+          <div class="play__circle"></div>
+          <img class="play__figure play__figure--left" src="/images/play-left.webp" alt="" />
+          <img class="play__figure play__figure--right" src="/images/play-right.webp" alt="" />
+          <h2 class="play__title" data-split-lines>
+            <span>COME IN</span>
+            <span>AND PLAY</span>
+          </h2>
+          <p class="play__text" data-reveal>Once a month we open the doors for a free, hands-on session. Bring curiosity; we bring the materials.</p>
+          <a class="pill-btn" href="#connect" data-glide data-reveal>Reserve a spot <span class="pill-btn__arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></a>
+        </div>
+      </section>
+
+      <!-- ───────── 05 Selected works ───────── -->
+      <section class="works" id="works" data-bg="green">
+        <div class="label-row label-row--light" data-line>
+          <span class="label-row__name"><i></i>05 Recent projects</span>
+          <span class="label-row__num"></span>
+        </div>
+        <div class="works__head">
+          <h2 class="works__title" data-reveal>Things we made lately.</h2>
+          <p class="works__intro" data-reveal>Six recent projects, big and small. Swap these cards for your own case studies.</p>
+        </div>
+        <div class="works__grid">
+          <article class="work" data-reveal><span class="work__tag">Skincare launch</span><h3>Petal — a launch film in one take</h3><div class="work__img"><img src="/images/work-1.webp" alt="" /></div></article>
+          <article class="work" data-reveal><span class="work__tag">Fashion week</span><h3>Knit Theory runway set</h3><div class="work__img"><img src="/images/work-2.webp" alt="" /></div></article>
+          <article class="work" data-reveal><span class="work__tag">Poster series</span><h3>Two Heads, One Idea</h3><div class="work__img"><img src="/images/work-3.webp" alt="" /></div></article>
+          <article class="work" data-reveal><span class="work__tag">Conference</span><h3>Soft Chairs, Hard Questions</h3><div class="work__img"><img src="/images/work-4.webp" alt="" /></div></article>
+          <article class="work" data-reveal><span class="work__tag">Out of home</span><h3>Look Up — a billboard takeover</h3><div class="work__img"><img src="/images/work-5.webp" alt="" /></div></article>
+          <article class="work" data-reveal><span class="work__tag">Supper club</span><h3>The Long Table, season two</h3><div class="work__img"><img src="/images/work-6.webp" alt="" /></div></article>
+        </div>
+      </section>
+
+      <!-- ───────── Partnerships ───────── -->
+      <section class="partners" data-bg="cream">
+        <div class="label-row" data-line>
+          <span class="label-row__name">Partners</span>
+          <span class="label-row__num"></span>
+        </div>
+        <h2 class="partners__title" data-reveal>Good<br />company.</h2>
+        <ul class="partners__list">
+          <li data-reveal><span class="partners__icon">A</span><span>Partner name — tooling partner</span><span>2024–Present</span></li>
+          <li data-reveal><span class="partners__icon">B</span><span>Partner name — residency program</span><span>2025–Present</span></li>
+          <li data-reveal><span class="partners__icon">C</span><span>Partner name — production partner</span><span>2025–Present</span></li>
+        </ul>
+      </section>
+
+      <!-- ───────── Recognition ───────── -->
+      <section class="recognition" data-bg="cream">
+        <div class="label-row" data-line>
+          <span class="label-row__name">Press &amp; awards</span>
+          <span class="label-row__num"></span>
+        </div>
+        <div class="recognition__head">
+          <h2 class="recognition__title" data-reveal><span>SEEN</span><span>AROUND.</span></h2>
+          <p class="recognition__intro" data-reveal>A few places our work has shown up. Replace these with your own press, awards or client highlights.</p>
+        </div>
+        <div class="recognition__cards">
+          <article class="award"><span class="award__kicker">Shortlist</span><h3>Annual Design Awards</h3><img src="/images/award-1.webp" alt="" /></article>
+          <article class="award"><span class="award__kicker">Feature</span><h3>Studio Visit Magazine</h3><img src="/images/award-2.webp" alt="" /></article>
+          <article class="award"><span class="award__kicker">Talk</span><h3>Makers Summit</h3><img src="/images/award-3.webp" alt="" /></article>
+        </div>
+      </section>
+
+      <!-- ───────── 06 For you ───────── -->
+      <section class="for-you" id="for-you">
+        <div class="label-row" data-line>
+          <span class="label-row__name"><i></i>06 For you</span>
+          <span class="label-row__num"></span>
+        </div>
+        <h2 class="for-you__giant" aria-hidden="true">FOR YOU</h2>
+        <div class="stack">
+          <article class="stack__card">
+            <div class="stack__text">
+              <h3>For Brands</h3>
+              <p>Launches, campaigns and experiences that give people a reason to show up — and something to talk about after.</p>
+              <a class="pill-btn pill-btn--green" href="#connect" data-glide>Start a project <span class="pill-btn__arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></a>
+            </div>
+            <div class="stack__media">
+              <div class="marquee" aria-hidden="true"><span>NEXTWAVE STUDIO · NEXTWAVE STUDIO · </span><span>NEXTWAVE STUDIO · NEXTWAVE STUDIO · </span></div>
+              <img src="/images/foryou-1.webp" alt="" />
+            </div>
+          </article>
+          <article class="stack__card stack__card--flip">
+            <div class="stack__text">
+              <h3>For Teams</h3>
+              <p>Workshops and sprints that get a group unstuck. We bring the structure, the materials and a lot of sticky notes.</p>
+              <a class="pill-btn pill-btn--green" href="#connect" data-glide>Book a workshop <span class="pill-btn__arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></a>
+            </div>
+            <div class="stack__media">
+              <div class="marquee" aria-hidden="true"><span>NEXTWAVE STUDIO · NEXTWAVE STUDIO · </span><span>NEXTWAVE STUDIO · NEXTWAVE STUDIO · </span></div>
+              <img src="/images/foryou-2.webp" alt="" />
+            </div>
+          </article>
+          <article class="stack__card stack__card--flip">
+            <div class="stack__text">
+              <h3>For Creators</h3>
+              <p>Mentoring, open studio days and small grants for independent makers who want to try the thing they keep putting off.</p>
+              <a class="pill-btn pill-btn--green" href="#connect" data-glide>See programs <span class="pill-btn__arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></a>
+            </div>
+            <div class="stack__media">
+              <div class="marquee" aria-hidden="true"><span>NEXTWAVE STUDIO · NEXTWAVE STUDIO · </span><span>NEXTWAVE STUDIO · NEXTWAVE STUDIO · </span></div>
+              <img src="/images/foryou-3.webp" alt="" />
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ───────── 07 Founder ───────── -->
+      <section class="founder">
+        <div class="label-row" data-line>
+          <span class="label-row__name"><i></i>Founder name</span>
+          <span class="label-row__num">07</span>
+        </div>
+        <div class="founder__card">
+          <img class="founder__deco founder__deco--star" src="/images/deco-star.webp" alt="" />
+          <img class="founder__deco founder__deco--figure" src="/images/deco-figure.webp" alt="" />
+          <h2 class="founder__name" data-reveal>Founder Name<br />Founder &amp; Creative Director</h2>
+          <img class="founder__photo" src="/images/founder.webp" alt="Portrait of the founder" />
+          <div class="founder__bio" data-reveal>
+            <p><strong>Founder Name</strong> started Nextwave Studio after a decade of watching good ideas die in slide decks.</p>
+            <p>They have spent <strong>fifteen years</strong> moving between product design, set building and short film.</p>
+            <p>Today they lead a small team that prototypes first and presents second.</p>
+            <p>Replace this with your own story — a short, human bio works best.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────── 08 Connect ───────── -->
+      <section class="connect" id="connect">
+        <div class="label-row" data-line>
+          <span class="label-row__name"><i></i>Connect</span>
+          <span class="label-row__num">08</span>
+        </div>
+        <h2 class="connect__title" data-split-lines>
+          <span>LET'S MAKE</span>
+          <span>SOMETHING</span>
+        </h2>
+        <p class="connect__intro" data-reveal>Tell us what you are working on. We usually reply within two working days.</p>
+        <div class="connect__buttons">
+          <a class="pill-btn pill-btn--outline" href="mailto:hello@example.com" data-reveal>Start a project <span class="pill-btn__arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></a>
+          <a class="pill-btn pill-btn--outline" href="mailto:hello@example.com" data-reveal>Book a call <span class="pill-btn__arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></a>
+          <a class="pill-btn pill-btn--outline" href="mailto:hello@example.com" data-reveal>Ask a question <span class="pill-btn__arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></a>
+          <a class="pill-btn pill-btn--outline" href="mailto:hello@example.com" data-reveal>Get the newsletter <span class="pill-btn__arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></a>
+        </div>
+      </section>
+    </main>
+
+    <!-- ───────── Footer ───────── -->
+    <footer class="footer">
+      <div class="footer__top">
+        <div>
+          <a href="#top" class="footer__logo" data-glide>NEXTWAVE STUDIO</a>
+          <div class="footer__social">
+            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5" /><circle cx="12" cy="12" r="3.5" /></svg></a>
+            <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M7 10v7M7 7v.01M11 17v-7M11 13a3 3 0 0 1 6 0v4" /></svg></a>
+            <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M10 9l5 3-5 3z" /></svg></a>
+          </div>
+        </div>
+        <a class="footer__mail" href="mailto:hello@example.com">hello@example.com</a>
+      </div>
+      <div class="footer__bottom">
+        <p>© <span id="year">2026</span> <strong>NEXTWAVE STUDIO</strong> | All rights reserved</p>
+        <a href="#top" class="footer__top-btn" aria-label="Back to top" data-glide><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6" /></svg></a>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
