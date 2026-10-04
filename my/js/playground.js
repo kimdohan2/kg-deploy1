@@ -3,7 +3,8 @@
 // - 눈은 포인터를 따라봄, 가끔 깜빡임
 // - 화면 밖이면 멈춤
 
-const { Engine, Bodies, Body, Composite, Constraint, Query, Events } = window.Matter;
+// Matter.js(CDN)를 못 불러와도 나머지 페이지는 그대로 동작하도록 빈 객체로 받아 둠
+const { Engine, Bodies, Body, Composite, Constraint, Query, Events } = window.Matter || {};
 
 export const PALETTE = ['#ff8fb1', '#ffd45c', '#7ccbff', '#8fdb6e', '#b79cff', '#ff9e5e'];
 const INK = '#3a2e5c';
@@ -11,15 +12,33 @@ const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (arr) => arr[(Math.random() * arr.length) | 0];
 
 export function createPlayground(canvas, opts = {}) {
+  if (!Engine) return { spawn() {}, rain() {}, count: 0 }; // 물리 엔진이 없으면 놀이터만 생략
   const {
     letters = [],            // 처음 떨어질 글자 블록
     intro = 10,              // 처음 떨어질 친구 수
     maxBodies = 70,
     sign = null,             // { text, sub, onClick } 줄에 매달린 간판
     kinds = ['blob', 'blob', 'star', 'donut', 'pill', 'ball'],
+    friends = [],            // [{ id, img, color }] 캐릭터 얼굴 공
+    introFriends = [],       // 글자 다음에 꼭 떨어질 친구 (friends 의 index)
     sound = () => {},
     scale: scaleFn = (w) => Math.max(0.62, Math.min(1, w / 1200)),
   } = opts;
+
+  // 캐릭터 이미지 미리 불러오기 (못 불러오면 일반 말랑이로 그림)
+  const friendArt = friends.map((f) => {
+    const im = new Image();
+    im.decoding = 'async';
+    im.src = f.img;
+    return { id: f.id, color: f.color, im };
+  });
+  // 지금 화면에 가장 적게 나온 친구를 골라 골고루 등장
+  function pickFriend() {
+    const count = new Map(friendArt.map((f) => [f, 0]));
+    toys.forEach((t) => t.friend && count.set(t.friend, count.get(t.friend) + 1));
+    const min = Math.min(...count.values());
+    return pick(friendArt.filter((f) => count.get(f) === min));
+  }
 
   const ctx = canvas.getContext('2d');
   const engine = Engine.create({ gravity: { y: 1 }, enableSleeping: false });
@@ -57,6 +76,7 @@ export function createPlayground(canvas, opts = {}) {
 
   // ---------- 친구 만들기 ----------
   function makeToy(kind, x, y, extra = {}) {
+    if (kind === 'friend' && !friendArt.length) kind = 'blob';
     const color = extra.color || pick(PALETTE);
     const common = { restitution: 0.45, friction: 0.25, frictionAir: 0.008, density: 0.0016 };
     let b;
@@ -77,9 +97,13 @@ export function createPlayground(canvas, opts = {}) {
       case 'ball': b = Bodies.circle(x, y, 26 * s, { ...common, restitution: 0.75 }); break;
       case 'star': b = Bodies.circle(x, y, 34 * s, { ...common, restitution: 0.5 }); break;
       case 'donut': b = Bodies.circle(x, y, 38 * s, common); break;
+      case 'friend':
+        b = Bodies.circle(x, y, 50 * S * (extra.size || rand(0.95, 1.15)), { ...common, restitution: 0.5 });
+        b.friend = extra.friend || pickFriend();
+        break;
       default: b = Bodies.circle(x, y, 44 * s, { ...common, restitution: 0.55 }); // blob
     }
-    b.kind = kind; b.color = color;
+    b.kind = kind; b.color = b.friend ? b.friend.color : color;
     b.squash = 0; b.born = performance.now();
     b.blink = rand(1500, 5000);
     b.face = kind === 'blob' || kind === 'letter' ? true : kind === 'pill' ? Math.random() < 0.6 : kind === 'ball' ? Math.random() < 0.4 : false;
@@ -114,8 +138,9 @@ export function createPlayground(canvas, opts = {}) {
     const ax = narrow ? W - body.w / 2 - 16 : Math.min(W - body.w / 2 - 30, W * 0.8);
     ropes[0].pointA = { x: ax - body.w * 0.38, y: -10 };
     ropes[1].pointA = { x: ax + body.w * 0.38, y: -10 };
-    ropes.forEach((r) => (r.length = narrow ? 92 : 130 + 60 * S));
-    Body.setPosition(body, { x: ax, y: narrow ? 128 : 180 + 60 * S });
+    // 모바일은 탭이 두 줄이라 간판을 더 아래에 매답니다
+    ropes.forEach((r) => (r.length = narrow ? 150 : 130 + 60 * S));
+    Body.setPosition(body, { x: ax, y: narrow ? 176 : 180 + 60 * S });
   }
   function makeSign() {
     const narrow = W < 760;
@@ -285,8 +310,11 @@ export function createPlayground(canvas, opts = {}) {
           ctx.save(); ctx.translate(0, 34 * S); ctx.scale(0.42, 0.42); face(b, 60 * S, now); ctx.restore();
         } else if (b.kind === 'sign') {
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#ff6b6b'; rr(-w / 2 + 14 * S, -h / 2 + 14 * S, 58 * S, 24 * S, 12 * S); ctx.fill(); ctx.lineWidth = 2.5 * S; ctx.stroke();
-          ctx.fillStyle = '#fff'; ctx.font = `${15 * S}px Jua, sans-serif`; ctx.fillText('NEW!', -w / 2 + 43 * S, -h / 2 + 27 * S);
+          const badge = signParts.badge || 'NEW!';
+          ctx.font = `${15 * S}px Jua, sans-serif`;
+          const bw = ctx.measureText(badge).width + 22 * S;
+          ctx.fillStyle = '#ff6b6b'; rr(-w / 2 + 14 * S, -h / 2 + 14 * S, bw, 24 * S, 12 * S); ctx.fill(); ctx.lineWidth = 2.5 * S; ctx.stroke();
+          ctx.fillStyle = '#fff'; ctx.fillText(badge, -w / 2 + 14 * S + bw / 2, -h / 2 + 27 * S);
           // 간판 폭에 맞춰 글자 크기 조절
           let fs = 26 * S;
           ctx.font = `${fs}px Jua, sans-serif`;
@@ -316,6 +344,24 @@ export function createPlayground(canvas, opts = {}) {
           ctx.fillStyle = s.c === b.color ? '#fff' : s.c; rr(-5 * S, -2 * S, 10 * S, 4 * S, 2 * S); ctx.fill(); ctx.restore();
         });
         ctx.beginPath(); ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2); ctx.fillStyle = '#e6f7ff'; ctx.fill(); ctx.lineWidth = 3 * S; ctx.stroke();
+        break;
+      }
+      case 'friend': {
+        const { im } = b.friend;
+        ctx.beginPath(); ctx.arc(0, 4 * S, r, 0, Math.PI * 2); ctx.fillStyle = INK; ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fillStyle = b.color; ctx.fill();
+        // 안쪽 밝은 원 + 캐릭터 얼굴 (아래쪽 잘린 부분은 원 밖으로)
+        ctx.beginPath(); ctx.arc(0, 0, r * 0.86, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fill();
+        if (im.complete && im.naturalWidth) {
+          ctx.save();
+          ctx.beginPath(); ctx.arc(0, 0, r - 1, 0, Math.PI * 2); ctx.clip();
+          const h = r * 2.05, w = h * (im.naturalWidth / im.naturalHeight);
+          ctx.drawImage(im, -w / 2, r * 1.02 - h, w, h);
+          ctx.restore();
+        } else {
+          face(b, r, now);
+        }
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.lineWidth = 3.5 * S; ctx.stroke();
         break;
       }
       default: { // blob, ball
@@ -363,7 +409,15 @@ export function createPlayground(canvas, opts = {}) {
       acc -= STEP;
       if (introQueue.length && now >= introQueue[0].at) { const q = introQueue.shift(); q.fn(); }
     }
-    toys.forEach((b) => { b.squash *= 0.93; if (b.position.y > H + 300) removeToy(b); });
+    toys.forEach((b) => {
+      b.squash *= 0.93;
+      if (b.position.y > H + 300) removeToy(b);
+      // 캐릭터 공은 오뚝이처럼 얼굴이 위로 오도록 살짝 되돌림
+      if (b.friend && !b.grabbed) {
+        const a = Math.atan2(Math.sin(b.angle), Math.cos(b.angle));
+        Body.setAngularVelocity(b, b.angularVelocity * 0.97 - a * 0.006);
+      }
+    });
     if (signParts) signParts.body.squash *= 0.93;
     render(now);
     raf = requestAnimationFrame(tick);
@@ -378,8 +432,11 @@ export function createPlayground(canvas, opts = {}) {
   letters.forEach((ch, i) => {
     introQueue.push({ at: t0 + i * 160, fn: () => makeToy('letter', W * 0.12 + i * Math.min(120 * S * 1.15, (W * 0.7) / letters.length), -120, { char: ch, color: PALETTE[i % PALETTE.length] }) });
   });
+  introFriends.forEach((n, i) => {
+    introQueue.push({ at: t0 + 850 + i * 220, fn: () => makeToy('friend', W * (0.55 + i * 0.18), -100, { friend: friendArt[n], size: 1.2 }) });
+  });
   for (let i = 0; i < intro; i++) {
-    introQueue.push({ at: t0 + 900 + i * 140, fn: () => makeToy(pick(kinds), rand(60, W - 60), -80 - rand(0, 200)) });
+    introQueue.push({ at: t0 + 1300 + i * 140, fn: () => makeToy(pick(kinds), rand(60, W - 60), -80 - rand(0, 200)) });
   }
 
   const io = new IntersectionObserver(([en]) => (en.isIntersecting ? start() : stop()), { threshold: 0.05 });

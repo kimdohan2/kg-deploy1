@@ -1,9 +1,19 @@
-import { games, categories, stores } from './data.js';
-import { createPlayground } from './playground.js';
+import { games, categories, stores, friends, greetings, art } from './data.js';
+import { createPlayground, PALETTE } from './playground.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const pick = (arr) => arr[(Math.random() * arr.length) | 0];
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 이미지를 못 불러오면 깨진 아이콘 대신 빈자리로 (발표장 인터넷이 불안할 때 대비)
+document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') e.target.style.visibility = 'hidden'; }, true);
+document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') e.target.style.visibility = ''; }, true);
+// 같은 애니메이션을 다시 재생
+const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+// 받침 있으면 '이'/'이야', 없으면 '가'/'야'
+const hasBatchim = (word) => (word.charCodeAt(word.length - 1) - 0xac00) % 28 > 0;
+const iga = (word) => (hasBatchim(word) ? '이' : '가');
+const iya = (word) => (hasBatchim(word) ? '이야' : '야');
 const catLabel = (id) => categories.find((c) => c.id === id)?.label ?? '';
 const isDark = (hex) => {
   const n = parseInt(hex.slice(1), 16);
@@ -37,13 +47,216 @@ const sfx = (() => {
 })();
 
 // ---------- 히어로 물리 놀이터 ----------
-const newest = games.find((g) => g.slug === 'dinosaur-world');
-const hero = createPlayground($('.playground'), {
+const friendArt = friends.map(({ id, img, color }) => ({ id, img, color }));
+const best = games.find((g) => g.slug === 'dentist'); // 다운로드 1위
+const wide = Math.min(1.6, Math.max(1, innerWidth / 1200)); // 발표 화면처럼 넓으면 장난감을 더 크고 많이
+createPlayground($('.playground'), {
   letters: ['K', 'I', 'G', 'L', 'E'],
-  intro: reduced ? 4 : 12,
-  sign: { text: newest.title, sub: '눌러서 구경하기 →', onClick: () => openGame(newest) },
+  intro: reduced ? 4 : Math.round(12 * wide),
+  scale: (w) => Math.max(0.62, Math.min(1.35, w / 1200)),
+  friends: friendArt,
+  introFriends: [0, 1], // 코코, 러비 먼저 등장
+  kinds: ['blob', 'blob', 'star', 'donut', 'pill', 'ball', 'friend', 'friend'],
+  sign: { badge: 'BEST!', text: best.title, sub: `${best.downloads} 다운로드 →`, onClick: () => openGame(best) },
   sound: sfx,
 });
+
+// ---------- 코코비 친구들 ----------
+$('.family-img').src = art.family;
+$('.about-img').src = art.playground;
+
+// 손 흔드는 친구들을 누르면 하트가 퐁퐁
+$('.family').addEventListener('click', (e) => {
+  const box = e.currentTarget, r = box.getBoundingClientRect();
+  const x = e.clientX ? e.clientX - r.left : r.width / 2;
+  replay(box, 'wave');
+  for (let i = 0; i < 8; i++) {
+    const h = document.createElement('span');
+    h.className = 'heart';
+    h.textContent = pick(['💛', '💗', '💚', '💙', '🧡']);
+    h.style.cssText = `left:${x}px; top:${r.height * 0.45}px; --dx:${(Math.random() - 0.5) * 220}px; --dy:${-120 - Math.random() * 140}px; animation-delay:${i * 40}ms`;
+    box.appendChild(h);
+    h.addEventListener('animationend', () => h.remove());
+  }
+  sfx('pop');
+});
+
+// 주인공 카드 (코코 + 러비)
+$('.duo').innerHTML = friends.filter((f) => f.star).map((f) => `
+  <article class="buddy" style="--c:${f.color}">
+    <p class="bubble" aria-live="polite">${f.lines[0]}</p>
+    <button class="buddy-face" type="button" data-id="${f.id}" aria-label="${f.name}에게 인사하기"><img src="${f.img}" alt="" /></button>
+    <h3>${f.name} <small>${f.en}</small></h3>
+    <p class="trait">${f.trait}</p>
+  </article>`).join('<span class="duo-plus" aria-hidden="true">+</span>');
+$('.duo').addEventListener('click', (e) => {
+  const btn = e.target.closest('.buddy-face');
+  if (!btn) return;
+  const f = friends.find((x) => x.id === btn.dataset.id), card = btn.closest('.buddy'), bubble = $('.bubble', card);
+  f.at = ((f.at ?? 0) + 1) % f.lines.length;
+  bubble.textContent = f.lines[f.at];
+  replay(card, 'hop'); replay(bubble, 'pop');
+  sfx('boing');
+});
+
+// 함께 노는 친구들: 처음엔 코코·러비 + 랜덤 1명, 공룡 알에서 새 친구가 나오면 여기로 합류
+const START_PALS = 1; // 처음부터 같이 있는 친구 수 (코코·러비 빼고)
+const crowd = $('.crowd'), crowdCard = $('.crowd-card'), crowdCount = $('.crowd-count');
+const shuffle = (arr) => arr.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(([, v]) => v);
+const met = new Set([...friends.filter((f) => f.star), ...shuffle(friends.filter((f) => !f.star)).slice(0, START_PALS)]);
+const palOf = (f) => $(`li[data-id="${f.id}"]`, crowd);
+const joined = () => $$('li:not(.incoming)', crowd).length;
+
+function addPal(f) {
+  const li = document.createElement('li');
+  li.dataset.id = f.id;
+  li.style.cssText = `--c:${f.color}; --d:${crowd.children.length * 0.3}s`;
+  li.innerHTML = `
+    <button class="pal" type="button" aria-label="${f.name ? `${f.name}에게` : '친구에게'} 인사하기"><img src="${f.img}" alt="" /></button>
+    <span class="pal-bubble" aria-hidden="true"></span>`;
+  crowd.appendChild(li);
+  return li;
+}
+function palSay(li, text) {
+  const b = $('.pal-bubble', li);
+  b.textContent = text;
+  replay(li, 'hop'); replay(b, 'say');
+}
+function updateCount() {
+  const n = joined(), done = n === friends.length;
+  crowdCount.innerHTML = `<b>${n}</b> / ${friends.length} · ${done ? '친구들을 다 모았어요! 🎉' : '알을 깨면 새 친구가 와요'}`;
+  crowdCard.classList.toggle('complete', done);
+}
+met.forEach(addPal);
+updateCount();
+crowd.addEventListener('click', (e) => {
+  const li = e.target.closest('li');
+  if (!li || !e.target.closest('.pal')) return;
+  const f = friends.find((x) => x.id === li.dataset.id);
+  palSay(li, f.name && Math.random() < 0.5 ? `나는 ${f.name}${iya(f.name)}!` : pick(greetings));
+  sfx('pop');
+});
+
+// 공룡 알 깨기: 세 번 두드리면 친구가 톡!
+const EGG = 'M100 10 C52 10 20 94 20 150 C20 202 56 232 100 232 C144 232 180 202 180 150 C180 94 148 10 100 10 Z';
+const ZIG = '0,124 20,112 40,130 60,110 80,130 100,110 120,130 140,110 160,130 180,112 200,124';
+const SPOTS = [[66, 62, 11, 0], [132, 50, 8, 2], [148, 98, 13, 1], [50, 104, 9, 3], [96, 88, 7, 4], [112, 168, 13, 4], [58, 182, 9, 5], [152, 178, 10, 0], [88, 206, 7, 2]];
+const shell = (part) => {
+  const cut = part === 'top' ? `0,0 200,0 ${ZIG.split(' ').reverse().join(' ')}` : `${ZIG} 200,240 0,240`;
+  return `<svg class="egg-shell egg-${part}" viewBox="0 0 200 240" aria-hidden="true">
+    <defs>
+      <clipPath id="egg-${part}-cut"><polygon points="${cut}" /></clipPath>
+      <clipPath id="egg-${part}-shape"><path d="${EGG}" /></clipPath>
+    </defs>
+    <g clip-path="url(#egg-${part}-cut)">
+      <path class="egg-fill" d="${EGG}" />
+      <g clip-path="url(#egg-${part}-shape)">${SPOTS.map(([x, y, r, c]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${PALETTE[c]}" />`).join('')}</g>
+      <path class="egg-line" d="${EGG}" />
+    </g>
+    <polyline class="egg-edge" points="${ZIG}" clip-path="url(#egg-${part}-shape)" />
+  </svg>`;
+};
+const stage = $('.egg-stage');
+stage.innerHTML = `
+  <img class="egg-friend" alt="" />
+  ${shell('bottom')}${shell('top')}
+  <svg class="egg-cracks" viewBox="0 0 200 240" aria-hidden="true">
+    <defs><clipPath id="egg-crack-shape"><path d="${EGG}" /></clipPath></defs>
+    <g clip-path="url(#egg-crack-shape)">
+      <polyline class="c1" points="100,110 95,94 104,82 97,66" />
+      <polyline class="c2" points="60,110 66,95 59,84" />
+      <polyline class="c2" points="140,110 134,96 141,86" />
+      <polyline class="c3" points="${ZIG}" />
+    </g>
+  </svg>
+  <button class="egg-hit" type="button" aria-label="공룡 알 두드리기"></button>
+  <div class="confetti" aria-hidden="true"></div>`;
+
+const NEW_FRIEND_CHANCE = 0.6; // 아직 못 만난 친구가 나올 확률 (나머지는 아무 친구나)
+let hits = 0, lastFriend = null, round = 0;
+const eggHint = $('.egg-hint'), eggAgain = $('.egg-again'), eggImg = $('.egg-friend', stage);
+$('.egg-hit', stage).addEventListener('click', () => {
+  replay(stage, 'shake');
+  if (hits >= 3) { sfx('boing'); return; } // 나온 친구를 누르면 알이 들썩
+  hits++;
+  stage.dataset.hits = hits;
+  sfx(hits < 3 ? 'grab' : 'boing');
+  if (hits < 3) { eggHint.textContent = ['톡! 조금만 더!', '톡톡! 거의 다 됐어요!'][hits - 1]; return; }
+  setTimeout(hatch, 260);
+});
+function hatch() {
+  const unmet = friends.filter((x) => !met.has(x));
+  const f = unmet.length && Math.random() < NEW_FRIEND_CHANCE ? pick(unmet) : pick(friends.filter((x) => x !== lastFriend));
+  const isNew = !met.has(f), r = round;
+  lastFriend = f;
+  eggImg.src = f.img;
+  eggImg.alt = f.name || '코코비 친구';
+  stage.classList.add('open');
+  eggHint.textContent = isNew
+    ? `짠! 새 친구${f.name ? ` ${f.name}${iga(f.name)}` : '가'} 나왔어요! 친구들에게 쏙~`
+    : f.name ? `짠! ${f.name}${iga(f.name)} 나왔어요!` : '짠! 아는 친구가 또 나왔어요!';
+  confetti($('.confetti', stage));
+  sfx('pop'); setTimeout(() => sfx('pop'), 140);
+  eggAgain.hidden = false;
+  if (isNew) {
+    met.add(f); // 날아가는 동안 같은 친구가 또 추가되지 않게 바로 표시
+    const li = addPal(f);
+    li.classList.add('incoming');
+    setTimeout(() => joinCrowd(f, li, r), reduced ? 0 : 800);
+  } else {
+    setTimeout(() => palSay(palOf(f), '나 여기 있어!'), 500);
+  }
+}
+// 알에서 나온 새 친구가 '함께 노는 친구들' 자리로 폴짝 날아감
+function joinCrowd(f, li, r) {
+  const arrive = () => {
+    li.classList.remove('incoming');
+    replay($('.pal', li), 'arrive');
+    updateCount();
+    sfx('boing');
+    if (joined() === friends.length) celebrate();
+  };
+  if (reduced || r !== round) return arrive(); // 그사이 '또 깨기'를 눌렀으면 바로 합류
+  const from = eggImg.getBoundingClientRect(), to = $('.pal', li).getBoundingClientRect();
+  const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+  const dy = from.top + from.height / 2 - (to.top + to.height / 2);
+  const flyer = document.createElement('div');
+  flyer.className = 'pal flyer';
+  flyer.style.cssText = `--c:${f.color}; left:${to.left}px; top:${to.top}px; width:${to.width}px; height:${to.height}px`;
+  flyer.innerHTML = `<img src="${f.img}" alt="" />`;
+  document.body.appendChild(flyer);
+  stage.classList.add('gone'); // 알 속 친구는 사라지고 날아가는 친구가 대신 등장
+  sfx('grab');
+  flyer.animate([
+    { transform: `translate(${dx}px, ${dy}px) scale(${Math.min(1.8, from.width / to.width)})` },
+    { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 140}px) scale(1.25) rotate(-14deg)`, offset: 0.5 },
+    { transform: 'none' },
+  ], { duration: 950, easing: 'cubic-bezier(.4, 0, .3, 1)' }).onfinish = () => { flyer.remove(); arrive(); };
+}
+// 일곱 친구를 다 모으면 다 같이 폴짝 + 색종이
+function celebrate() {
+  eggHint.textContent = '와! 친구들을 모두 모았어요! 🎉';
+  confetti($('.confetti', crowdCard), 40);
+  $$('li', crowd).forEach((li, i) => setTimeout(() => replay(li, 'hop'), i * 90));
+}
+eggAgain.addEventListener('click', () => {
+  round++;
+  hits = 0;
+  stage.dataset.hits = 0;
+  stage.classList.remove('open', 'gone');
+  eggAgain.hidden = true;
+  eggHint.textContent = '톡톡 세 번 두드리면 누가 나올까?';
+  $('.egg-hit', stage).focus();
+});
+function confetti(box, n = 28) {
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('i');
+    const a = Math.random() * Math.PI * 2, d = 70 + Math.random() * 100;
+    s.style.cssText = `--dx:${Math.cos(a) * d}px; --dy:${Math.sin(a) * d - 50}px; --r:${Math.random() * 720 - 360}deg; background:${pick(PALETTE)}`;
+    box.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
 
 // ---------- 영상관 ----------
 const trailers = games.filter((g) => g.video);
@@ -144,14 +357,22 @@ $$('dialog').forEach((d) => {
 });
 
 // ---------- 숫자 카운트업 ----------
+// 150000000 → '1억 5천만', 18000000 → '1,800만'
+const krNum = (n) => {
+  if (n < 10000) return n.toLocaleString('ko-KR');
+  const eok = Math.floor(n / 1e8), man = Math.floor((n % 1e8) / 1e4);
+  const manText = !man ? '' : man % 1000 === 0 ? `${man / 1000}천만` : `${man.toLocaleString('ko-KR')}만`;
+  return [eok ? `${eok}억` : '', manText].filter(Boolean).join(' ');
+};
 const counters = new IntersectionObserver((entries) => {
   entries.forEach(({ isIntersecting, target }) => {
     if (!isIntersecting) return;
     counters.unobserve(target);
-    const end = +target.dataset.count, suffix = target.dataset.suffix || '', t0 = performance.now(), dur = reduced ? 1 : 1400;
+    const end = +target.dataset.count, suffix = target.dataset.suffix || '', t0 = performance.now(), dur = reduced ? 1 : 1600;
+    const fmt = target.dataset.format === 'kr' ? krNum : (n) => n.toLocaleString('ko-KR');
     const step = (now) => {
       const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
-      target.textContent = Math.round(end * e).toLocaleString('ko-KR') + suffix;
+      target.textContent = fmt(Math.round(end * e)) + suffix;
       if (p < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -159,11 +380,24 @@ const counters = new IntersectionObserver((entries) => {
 }, { threshold: 0.6 });
 $$('[data-count]').forEach((el) => counters.observe(el));
 
+// ---------- 상단 탭: 지금 보고 있는 섹션 표시 ----------
+const navLinks = $$('.nav-links a');
+const spy = new IntersectionObserver((entries) => {
+  entries.forEach(({ isIntersecting, target }) => {
+    if (!isIntersecting) return;
+    navLinks.forEach((a) => (a.getAttribute('href') === `#${target.id}` ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
+  });
+}, { rootMargin: '-45% 0px -50% 0px' });
+['hero', 'friends', 'reel', 'games', 'about', 'contact'].forEach((id) => spy.observe(document.getElementById(id)));
+
 // ---------- 푸터 볼풀 ----------
-$$('.store').forEach((a) => (a.href = stores[a.dataset.store]));
+$$('[data-store]').forEach((a) => (a.href = stores[a.dataset.store]));
 new IntersectionObserver(([en], obs) => {
   if (!en.isIntersecting) return;
   obs.disconnect();
-  const pit = createPlayground($('.ballpit'), { intro: 0, maxBodies: 90, kinds: ['ball', 'ball', 'ball', 'blob', 'star'], sound: sfx });
-  pit.rain(reduced ? 20 : 60);
+  const pit = createPlayground($('.ballpit'), {
+    intro: 0, maxBodies: 90, friends: friendArt,
+    kinds: ['ball', 'ball', 'ball', 'blob', 'star', 'friend', 'friend'], sound: sfx,
+  });
+  pit.rain(reduced ? 20 : Math.round(60 * Math.min(1, Math.max(0.5, innerWidth / 1200)))); // 모바일은 공을 덜
 }, { threshold: 0.25 }).observe($('.footer'));

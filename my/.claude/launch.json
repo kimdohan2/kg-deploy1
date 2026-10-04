@@ -4,7 +4,7 @@
     {
       "name": "kigle-mockup",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "5180"],
+      "runtimeArgs": ["serve.py", "5180"],
       "port": 5180
     }
   ]

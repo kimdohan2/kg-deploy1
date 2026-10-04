@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KIGLE 놀이터</title>
+  <title>KIGLE · 아이들의 첫 번째 놀이터</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 6C14 6 5 22 5 37c0 13 11 21 27 21s27-8 27-21C59 22 50 6 32 6z' fill='%238fdb6e' stroke='%233a2e5c' stroke-width='4'/%3E%3Cellipse cx='23' cy='31' rx='4' ry='5.5' fill='%233a2e5c'/%3E%3Cellipse cx='41' cy='31' rx='4' ry='5.5' fill='%233a2e5c'/%3E%3C/svg%3E" />
   <meta name="description" content="꼬마공룡 코코비와 친구들이 사는 KIGLE의 놀이터 — 게임, 영상, 그리고 우리 이야기." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,6 +18,7 @@
       <span class="logo-blob" aria-hidden="true"><i></i><i></i></span>KIGLE
     </a>
     <nav class="nav-links" aria-label="주요 메뉴">
+      <a href="#friends">친구들</a>
       <a href="#reel">영상관</a>
       <a href="#games">게임</a>
       <a href="#about">소개</a>
@@ -36,7 +38,7 @@
       <div class="hero-copy">
         <p class="badge">꼬마공룡 코코비 &amp; 친구들</p>
         <h1>아이들이 처음 만나는<br /><span class="wiggle">신나는 놀이터</span></h1>
-        <p class="lead">KIGLE은 아이들의 하루를 즐겁게 만드는 키즈 게임을 만들어요.<br />누적 <b data-stat="downloads">1,480만+</b> 다운로드, 지금도 새로운 놀이를 준비 중!</p>
+        <p class="lead">KIGLE은 앱, 영상, 동요로 아이들의 첫 번째 놀이터를 만들어요.<br />전 세계 앱 다운로드 <b>1억 5천만+</b>, 지금도 새로운 놀이를 준비 중!</p>
         <div class="hero-cta">
           <a class="btn" href="#games">게임 구경하기</a>
           <a class="btn btn-ghost" href="#reel">▶ 영상 보기</a>
@@ -45,7 +47,39 @@
       <p class="hero-hint" aria-hidden="true"><span>👆</span> 친구들을 잡아서 던져 보세요<span class="hint-more"> · 빈 곳을 누르면 새 친구가 나와요</span></p>
     </section>
 
-    <!-- 2. 영상관 (Merci-Michel 쇼릴 구조) -->
+    <!-- 2. 코코비 친구들 -->
+    <section id="friends" class="friends">
+      <div class="clouds" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="section-head">
+        <p class="eyebrow">코코비 친구들</p>
+        <h2>안녕! 우리는 꼬마공룡 코코비</h2>
+        <p class="equation" aria-label="코코 더하기 러비는 코코비">
+          <span style="--c: var(--pink)">코코</span><b aria-hidden="true">+</b><span style="--c: var(--yellow)">러비</span><b aria-hidden="true">=</b><span class="eq-total" style="--c: var(--green)">코코비</span>
+        </p>
+        <p class="section-lead">공룡이 멸종하지 않은 세상, 코코와 러비가 사는 마을로 놀러 오세요!</p>
+      </div>
+      <button class="family" type="button" aria-label="코코비 친구들에게 손 흔들기">
+        <img class="family-img" alt="손을 흔드는 코코비 캐릭터들" />
+      </button>
+      <div class="duo"></div>
+      <div class="friends-more">
+        <div class="crowd-card">
+          <h3>함께 노는 친구들</h3>
+          <p>눌러서 인사해 보세요!</p>
+          <p class="crowd-count" aria-live="polite"></p>
+          <ul class="crowd"></ul>
+          <div class="confetti" aria-hidden="true"></div>
+        </div>
+        <div class="egg-card">
+          <h3>공룡 알 깨기</h3>
+          <p class="egg-hint" aria-live="polite">톡톡 세 번 두드리면 누가 나올까?</p>
+          <div class="egg-stage" data-hits="0"></div>
+          <button class="btn btn-small egg-again" type="button" hidden>또 깨기 🥚</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 영상관 (Merci-Michel 쇼릴 구조) -->
     <section id="reel" class="reel">
       <div class="section-head">
         <p class="eyebrow">놀이 영상관</p>
@@ -65,9 +99,13 @@
         <div class="tv-knobs" aria-hidden="true"><i></i><i></i></div>
       </div>
       <div class="filmstrip" role="tablist" aria-label="예고편 목록"></div>
+      <div class="reel-more">
+        <span class="reel-stat">📺 키글 유튜브 구독자 <b>1,800만+</b></span>
+        <a class="btn btn-ghost" data-store="youtube" target="_blank" rel="noopener">유튜브 채널 보러 가기 →</a>
+      </div>
     </section>
 
-    <!-- 3. 게임: 장난감 상자 -->
+    <!-- 4. 게임: 장난감 상자 -->
     <section id="games" class="games">
       <div class="section-head">
         <p class="eyebrow">장난감 상자</p>
@@ -77,17 +115,43 @@
       <ul class="game-grid"></ul>
     </section>
 
-    <!-- 4. 소개 -->
+    <!-- 5. 소개 (kigle.co.kr 공식 수치) -->
     <section id="about" class="about">
       <div class="section-head">
         <p class="eyebrow">우리는요</p>
-        <h2>놀이가 먼저, 배움은 살짝</h2>
+        <h2>전 세계 아이들의 첫 번째 놀이터</h2>
+        <p class="section-lead">KIGLE은 2015년부터 앱, 영상, 동요로 아이들의 첫 놀이를 만들어 왔어요.</p>
+      </div>
+      <div class="about-stage">
+        <img class="about-img" alt="모니터 주위에 모여 노는 코코비 친구들" loading="lazy" />
       </div>
       <ul class="stats">
-        <li><b data-count="11">0</b><span>개의 게임</span></li>
-        <li><b data-count="1480" data-suffix="만+">0</b><span>누적 다운로드</span></li>
-        <li><b data-count="9">0</b><span>편의 예고편</span></li>
+        <li style="--c: var(--sky)"><b data-count="150000000" data-format="kr" data-suffix="+">0</b><span>전 세계 앱 다운로드</span></li>
+        <li style="--c: var(--pink)"><b data-count="18000000" data-format="kr" data-suffix="+">0</b><span>유튜브 구독자</span></li>
+        <li style="--c: var(--green)"><b data-count="142" data-suffix="개국">0</b><span>코코비 동요가 흐르는 나라</span></li>
+        <li style="--c: var(--yellow)"><b data-count="49" data-suffix="장">0</b><span>코코비 동요 앨범</span></li>
       </ul>
+
+      <h3 class="sub-head">앱 · 영상 · 동요, 놀이가 이어져요</h3>
+      <ul class="values mix">
+        <li style="--c: var(--sky)">
+          <span class="v-icon">📱</span>
+          <h3>앱</h3>
+          <p>누르고 끌면 바로 반응하는 인터랙티브 앱. 코코비 앱만 8,000만 다운로드를 넘었어요.</p>
+        </li>
+        <li style="--c: var(--pink)">
+          <span class="v-icon">📺</span>
+          <h3>영상</h3>
+          <p>코코비 한국어·영어·스페인어 채널과 키글TV에서 노래와 이야기를 만나요.</p>
+        </li>
+        <li style="--c: var(--yellow)">
+          <span class="v-icon">🎵</span>
+          <h3>동요</h3>
+          <p>멜론, 스포티파이, 애플 뮤직에서 6개 언어로 듣는 코코비 동요.</p>
+        </li>
+      </ul>
+
+      <h3 class="sub-head">우리가 놀이를 만드는 방법</h3>
       <ul class="values">
         <li style="--c: var(--pink)">
           <span class="v-icon">🎈</span>
@@ -108,7 +172,7 @@
     </section>
   </main>
 
-  <!-- 5. 푸터: 볼풀 -->
+  <!-- 6. 푸터: 볼풀 -->
   <footer id="contact" class="footer">
     <canvas class="ballpit" aria-hidden="true"></canvas>
     <div class="footer-copy">
@@ -117,8 +181,8 @@
       <div class="stores">
         <a class="btn store" data-store="play" target="_blank" rel="noopener">Google Play</a>
         <a class="btn store" data-store="apple" target="_blank" rel="noopener">App Store</a>
+        <a class="btn store" data-store="youtube" target="_blank" rel="noopener">YouTube</a>
       </div>
-      <p class="small">© KIGLE · 시안 v0.1</p>
     </div>
   </footer>
 

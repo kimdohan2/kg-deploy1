@@ -102,4 +102,37 @@ export const games = [
 export const stores = {
   play: 'https://play.google.com/store/apps/dev?id=4740368439505063702',
   apple: 'https://apps.apple.com/us/developer/kigle-inc/id1078190379',
+  youtube: 'https://www.youtube.com/channel/UC2fWLJgQUxRg-5Mv5A0cJMg', // kigle.co.kr Watch 페이지의 채널 링크
 };
+
+// ---------- 코코비 친구들 ----------
+// 캐릭터 이미지는 시안이라 kigle.co.kr 공개 이미지를 그대로 불러옵니다.
+// 실제 사이트에서는 원본 파일을 assets/ 에 넣고 주소만 바꾸면 됩니다.
+const K = (file) => `https://kigle.co.kr/img/custom/${file}`;
+
+export const art = {
+  family: K('main_visual_character_m.png'),   // 손 흔드는 3D 캐릭터 넷
+  playground: K('about_playground_img.png'),  // 모니터 주위에 모인 3D 친구들
+};
+
+// star: true 인 친구(코코·러비)는 주인공 카드로 크게 나오고 '함께 노는 친구들'에도 처음부터 있어요.
+// 나머지는 랜덤 1명이 먼저 나오고, 공룡 알에서 새 친구가 나오면 '함께 노는 친구들'로 합류해요.
+// 코코·러비 소개 문구는 공식 소개('걸크러쉬 골목 대장 코코와 호기심 많고 귀여운 동생 러비')에서 가져왔고,
+// lines(말풍선)는 시안용으로 쓴 대사입니다. 나머지 친구들은 name 을 채우면 인사할 때 이름을 말해요.
+export const friends = [
+  {
+    id: 'coco', star: true, name: '코코', en: 'Coco', trait: '걸크러쉬 골목 대장', color: '#ff8fb1', img: K('about_original_img_1.png'),
+    lines: ['안녕! 나는 코코야!', '따라와, 골목 대장이 간다!', '오늘은 뭐 하고 놀까?'],
+  },
+  {
+    id: 'lobi', star: true, name: '러비', en: 'Lobi', trait: '호기심 많고 귀여운 동생', color: '#ffd45c', img: K('about_original_img_2.png'),
+    lines: ['안녕! 나는 러비야!', '이건 뭐야? 너무 궁금해!', '코코, 같이 가!'],
+  },
+  { id: 'red', name: null, color: '#ff6b6b', img: K('about_original_img_3.png') },
+  { id: 'blue', name: null, color: '#7ccbff', img: K('about_original_img_4.png') },
+  { id: 'green', name: null, color: '#8fdb6e', img: K('about_original_img_5.png') },
+  { id: 'brown', name: null, color: '#ff9e5e', img: K('about_original_img_6.png') },
+  { id: 'gray', name: null, color: '#b79cff', img: K('about_original_img_7.png') },
+];
+
+export const greetings = ['안녕!', '같이 놀자!', '반가워!', '헤헤', '나 여기 있어!'];
