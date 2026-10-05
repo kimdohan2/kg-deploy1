@@ -21,6 +21,7 @@ export function createPlayground(canvas, opts = {}) {
     kinds = ['blob', 'blob', 'star', 'donut', 'pill', 'ball'],
     friends = [],            // [{ id, img, color }] 캐릭터 얼굴 공
     introFriends = [],       // 글자 다음에 꼭 떨어질 친구 (friends 의 index)
+    floor = 0,               // 바닥을 캔버스 아래에서 이만큼 위로 (px)
     sound = () => {},
     scale: scaleFn = (w) => Math.max(0.62, Math.min(1, w / 1200)),
   } = opts;
@@ -62,14 +63,14 @@ export function createPlayground(canvas, opts = {}) {
     Composite.remove(world, walls);
     const t = 200;
     walls = [
-      Bodies.rectangle(W / 2, H + t / 2 - 2, W * 3, t, { isStatic: true, friction: 0.8 }),
+      Bodies.rectangle(W / 2, H - floor + t / 2 - 2, W * 3, t, { isStatic: true, friction: 0.8 }),
       Bodies.rectangle(-t / 2, H / 2 - 1000, t, H * 2 + 2000, { isStatic: true }),
       Bodies.rectangle(W + t / 2, H / 2 - 1000, t, H * 2 + 2000, { isStatic: true }),
     ];
     Composite.add(world, walls);
     // 화면 밖으로 빠진 친구 되돌리기
     toys.forEach((b) => {
-      if (b.position.x > W - 20 || b.position.y > H) Body.setPosition(b, { x: Math.min(b.position.x, W - 60), y: Math.min(b.position.y, H - 80) });
+      if (b.position.x > W - 20 || b.position.y > H - floor) Body.setPosition(b, { x: Math.min(b.position.x, W - 60), y: Math.min(b.position.y, H - floor - 80) });
     });
     if (signParts) placeSign();
   }

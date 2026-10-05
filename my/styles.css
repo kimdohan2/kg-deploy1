@@ -322,6 +322,49 @@ section { padding: 110px 24px; }
 .film span { display: block; padding: 8px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .film:hover { transform: translateY(-6px) rotate(-2deg); }
 .film[aria-selected="true"] { background: var(--yellow); transform: translateY(-8px); }
+/* 영상관 커튼: 스크롤하는 동안 무대가 고정되고 커튼이 양옆으로 걷힘 (--open: 0 닫힘 → 1 열림) */
+.reel { padding-top: 0; }
+.reel-pin { height: 190svh; } /* 무대가 고정된 채 스크롤되는 길이 */
+.reel-stage {
+  position: sticky; top: 0; z-index: 2; height: 100svh; /* 내려오는 커튼이 앞 섹션(z 1)을 덮도록 */
+  display: flex; flex-direction: column; justify-content: center;
+  padding-top: 70px; /* 상단 탭 자리 */
+}
+.reel-stage::before { /* 막이 열리면 켜지는 무대 조명 */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(42% 52% at 50% 58%, rgba(255, 240, 180, .38), transparent 70%);
+  opacity: var(--open, 1);
+}
+.reel-stage .section-head { margin-bottom: 0; }
+.reel .tv {
+  width: min(100%, 980px, calc((100svh - 330px) * 16 / 9)); margin: 64px auto 0;
+  transform: scale(calc(.92 + var(--open, 1) * .08));
+  filter: brightness(calc(.55 + var(--open, 1) * .45));
+}
+.curtains { position: absolute; inset: 0 -24px; z-index: 5; pointer-events: none; overflow: hidden; transform: translateY(var(--drop-y, 0px)); will-change: transform; }
+.curtain {
+  position: absolute; top: 0; bottom: 0; width: 52%; will-change: transform;
+  background: /* 이미지가 없을 때 쓰는 CSS 커튼 */
+    radial-gradient(120% 30% at 50% 100%, rgba(30, 10, 60, .35), transparent 70%),
+    repeating-linear-gradient(90deg, #5b2d91 0, #8a58cf 28px, #6a3aa8 52px, #5b2d91 64px);
+  box-shadow: inset 0 14px 0 #f2c14e, inset 0 -10px 0 #f2c14e;
+}
+.curtain-left { left: 0; transform-origin: left center; transform: scaleX(calc(1 - var(--open, 1) * .84)); }
+.curtain-right { right: 0; transform-origin: right center; transform: scaleX(calc(1 - var(--open, 1) * .84)); }
+.curtains.has-art .curtain { background: none; box-shadow: none; }
+.curtains.has-art .curtain::before { content: ""; position: absolute; inset: 0; background: var(--curtain) center / 100% 100% no-repeat; }
+.curtains.has-art .curtain-right::before { transform: scaleX(-1); }
+.curtain-sign {
+  position: absolute; left: 50%; top: 50%; z-index: 2; margin: 0; padding: .7em 1.4em;
+  transform: translate(-50%, -50%) rotate(-3deg) scale(calc(1 - var(--open, 1) * .3));
+  opacity: calc(1 - var(--open, 1) * 4);
+  font: 400 clamp(1.3rem, 2.6vw, 2rem)/1.3 var(--display); text-align: center; color: var(--ink);
+  background: var(--yellow); border: var(--line); border-radius: 24px; box-shadow: var(--pop);
+  animation: signSwing 2.4s ease-in-out infinite;
+}
+.curtain-sign span { display: block; font-size: .6em; color: var(--ink-soft); }
+@keyframes signSwing { 50% { rotate: 4deg; } }
+
 .reel-more { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 14px; margin: 22px auto 0; }
 .reel-stat { padding: .6em 1.1em; font: 400 1.1rem/1 var(--display); background: var(--paper); border: var(--line); border-radius: 999px; box-shadow: var(--pop-sm); }
 .reel-stat b { color: var(--red); }
@@ -440,6 +483,47 @@ dialog[open] { animation: sheetIn .5s var(--spring); }
 .player-frame { aspect-ratio: 16 / 9; border-radius: 32px; overflow: hidden; }
 .player-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
 
+/* ---------- imagegen 스킬로 만든 이미지 (assets/gen, 없으면 기본 디자인 그대로) ---------- */
+img[data-gen]:not(.ready) { display: none; }
+/* 배경 세계: 섹션 배경을 화면 뒤 한 층에 쌓고, 섹션이 바뀌는 구간에서 다음 배경이 스르르 겹쳐 나타남 */
+.world { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; background: var(--cream); }
+.world > i {
+  position: absolute; inset: 0; visibility: hidden; will-change: opacity, transform;
+  background: linear-gradient(var(--veil, transparent), var(--veil, transparent)), var(--bg) center / cover no-repeat;
+}
+.world-on .friends, .world-on .reel, .world-on .about, .world-on .footer { background: transparent; border: 0; }
+.world-on .hero { background: radial-gradient(circle at 85% 18%, #fff3b0 0 9%, transparent 9.5%); } /* 해만 남김 */
+.world-on .hero::after { /* 언덕 아랫부분이 다음 장면으로 스며들게 */
+  -webkit-mask-image: linear-gradient(#000 40%, transparent 66%); mask-image: linear-gradient(#000 40%, transparent 66%);
+}
+.world-on .friends .clouds { display: none; }
+.cloud-gap { display: none; }
+.world-on .cloud-gap { display: block; height: 140svh; } /* 페이지 1과 2 사이 구름 구간 길이 */
+/* 섹션이 바뀌는 구간을 지나가는 소품 (구름·장난감·풍선·별) */
+.travelers { position: fixed; inset: 0; z-index: 15; pointer-events: none; overflow: hidden; }
+.travelers img {
+  position: absolute; left: 0; top: 0; visibility: hidden; will-change: transform, opacity;
+  filter: drop-shadow(0 8px 0 rgba(58, 46, 92, .14));
+}
+/* 스크롤하면 아래에서 차례로 떠오르는 등장 애니메이션 */
+.js-reveal .reveal {
+  opacity: 0; translate: 0 56px;
+  transition: opacity .7s ease, translate .9s var(--spring), transform .4s var(--spring);
+  transition-delay: calc(var(--i, 0) * 80ms), calc(var(--i, 0) * 80ms), 0s;
+}
+.js-reveal .reveal.in { opacity: 1; translate: 0 0; }
+.family.has-village::before { /* 코코비 친구들 뒤의 공룡 마을 창문 */
+  content: ""; position: absolute; z-index: -1; inset: 4% 0 9%;
+  background: var(--village) center / cover no-repeat;
+  border: var(--line); border-radius: 40px; box-shadow: var(--pop);
+}
+.prop { position: absolute; z-index: 2; pointer-events: none; filter: drop-shadow(0 6px 0 rgba(58, 46, 92, .18)); }
+.games .section-head { position: relative; }
+.prop-toybox { width: 170px; right: 3%; top: -36px; rotate: 6deg; animation: float 3.2s ease-in-out infinite; }
+.prop-popcorn { width: 140px; left: -56px; top: -78px; rotate: -10deg; animation: float 3.6s ease-in-out infinite; }
+.v-icon.has-art { display: block; width: 96px; height: 96px; background: none; border: 0; }
+.v-icon.has-art img { display: block; width: 96px; height: 96px; object-fit: contain; object-position: left bottom; filter: drop-shadow(0 4px 0 rgba(58, 46, 92, .2)); }
+
 /* ---------- 애니메이션 ---------- */
 @keyframes blob { 50% { border-radius: 45% 55% 45% 55% / 55% 50% 50% 45%; transform: scale(1.06, .94); } }
 @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
@@ -496,6 +580,7 @@ dialog[open] { animation: sheetIn .5s var(--spring); }
   .hint-more { display: none; }
   section { padding: 84px 16px; }
   .tv { margin-top: 50px; }
+  .reel-stage { padding-top: 110px; }
   .tv-screen { border-radius: 26px; box-shadow: 0 0 0 7px var(--orange), 0 0 0 10px var(--ink), 0 14px 0 4px var(--ink); }
   .tv-play { width: 78px; height: 78px; font-size: 1.7rem; }
   .tv-caption { left: 12px; right: 12px; bottom: 12px; gap: 6px; }
@@ -514,6 +599,8 @@ dialog[open] { animation: sheetIn .5s var(--spring); }
   .buddy { padding-top: 76px; }
   .crowd { gap: 18px 10px; margin-top: 40px; }
   .sub-head { margin-top: 64px; }
+  .prop-toybox { width: 92px; right: -4px; top: -26px; }
+  .prop-popcorn { width: 80px; left: -6px; top: -54px; }
   .values li:nth-child(2) { transform: none; }
   .values li:nth-child(2):hover { transform: translateY(-8px) rotate(1.5deg); }
   .footer-copy { padding-inline: 16px; }
@@ -524,6 +611,10 @@ dialog[open] { animation: sheetIn .5s var(--spring); }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .world-on .cloud-gap { display: none; }
+  .reel-pin { height: auto; }
+  .reel-stage { position: static; height: auto; padding-top: 110px; }
+  .curtains { display: none; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   html { scroll-behavior: auto; }
 }

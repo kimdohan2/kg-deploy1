@@ -56,6 +56,7 @@ createPlayground($('.playground'), {
   scale: (w) => Math.max(0.62, Math.min(1.35, w / 1200)),
   friends: friendArt,
   introFriends: [0, 1], // 코코, 러비 먼저 등장
+  floor: 48, // 언덕 아랫부분은 다음 장면으로 스며드니 장난감은 그 위에 섬
   kinds: ['blob', 'blob', 'star', 'donut', 'pill', 'ball', 'friend', 'friend'],
   sign: { badge: 'BEST!', text: best.title, sub: `${best.downloads} 다운로드 →`, onClick: () => openGame(best) },
   sound: sfx,
@@ -284,6 +285,26 @@ strip.addEventListener('click', (e) => { const f = e.target.closest('.film'); if
 $('.tv-play').addEventListener('click', () => openVideo(trailers[current]));
 showTrailer(0);
 
+// 영상관 커튼: 무대가 고정된 동안 스크롤하는 만큼 막이 열림 (CSS 변수 --open: 0 → 1)
+const reelPin = $('.reel-pin');
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+let curtainFrame = 0;
+function updateCurtain() {
+  curtainFrame = 0;
+  const r = reelPin.getBoundingClientRect();
+  const travel = Math.max(1, (r.height - innerHeight) * 0.7); // 고정 구간의 70% 동안 열리고 나머지는 열린 채로
+  const p = Math.min(1, Math.max(0, -r.top / travel));
+  reelPin.style.setProperty('--open', easeInOut(p).toFixed(4));
+  // 무대가 올라오는 동안 커튼은 위에서 내려와(앞 장면을 덮으며) 무대가 고정될 때 딱 맞게 닫힘
+  reelPin.style.setProperty('--drop-y', `${(-2 * Math.max(0, r.top)).toFixed(1)}px`);
+}
+if (reduced) reelPin.style.setProperty('--open', 1);
+else {
+  addEventListener('scroll', () => { curtainFrame ||= requestAnimationFrame(updateCurtain); }, { passive: true });
+  addEventListener('resize', updateCurtain);
+  updateCurtain();
+}
+
 const player = $('.player');
 function openVideo(g) {
   clearInterval(reelTimer);
@@ -389,6 +410,165 @@ const spy = new IntersectionObserver((entries) => {
   });
 }, { rootMargin: '-45% 0px -50% 0px' });
 ['hero', 'friends', 'reel', 'games', 'about', 'contact'].forEach((id) => spy.observe(document.getElementById(id)));
+
+// ---------- imagegen 스킬로 만든 이미지 연결 ----------
+// scripts/generate-assets.sh 가 만든 assets/gen/manifest.json 에 있는 이미지만 씀 (없으면 지금 디자인 그대로)
+fetch('assets/gen/manifest.json').then((r) => (r.ok ? r.json() : [])).catch(() => []).then((files) => {
+  const gen = (f) => (files.includes(f) ? `assets/gen/${f}` : null);
+  const village = gen('bg-friends-village.jpg');
+  if (village) { $('.family').style.setProperty('--village', `url(${village})`); $('.family').classList.add('has-village'); }
+  $$('img[data-gen]').forEach((img) => {
+    const src = gen(img.dataset.gen);
+    if (src) { img.src = src; img.classList.add('ready'); }
+  });
+  $$('[data-gen-icon]').forEach((el) => {
+    const src = gen(el.dataset.genIcon);
+    if (src) { el.innerHTML = `<img src="${src}" alt="" />`; el.classList.add('has-art'); }
+  });
+  const curtain = gen('prop-curtain.png');
+  if (curtain) { $('.curtains').style.setProperty('--curtain', `url(${curtain})`); $('.curtains').classList.add('has-art'); }
+  buildWorld(gen);
+});
+
+// ---------- 배경 세계 + 장면 전환 소품 ----------
+// 섹션 배경을 화면 뒤 한 층에 쌓아 두고, 다음 섹션이 화면 아래에서 위로 지나가는 동안
+// 다음 배경이 겹쳐 나타남(살짝 줌인). 같은 구간에서 소품이 앞 장면에서 다음 장면으로 지나감.
+const SEAM_START = 1.1;  // 전환이 시작되는 위치 (다음 섹션 윗변이 화면 높이의 110% 지점)
+const SEAM_LENGTH = 1.6; // 전환이 이어지는 스크롤 길이 (화면 높이의 160%) — 늘리면 더 길고 천천히
+const SCENES = [
+  { id: 'hero', bg: 'bg-hero-sky.jpg' },
+  { id: 'friends', bg: 'bg-friends-pattern.jpg', veil: 'rgba(255, 240, 184, .1)' },
+  { id: 'reel', bg: 'bg-reel-theater.jpg', veil: 'rgba(58, 46, 92, .08)' },
+  { id: 'games', bg: 'bg-games-playroom.jpg', veil: 'rgba(255, 246, 229, .15)' },
+  { id: 'about', bg: 'bg-about-world.jpg', veil: 'rgba(255, 253, 247, .15)' },
+  { id: 'contact', bg: 'bg-footer-party.jpg', veil: 'rgba(255, 143, 177, .08)' },
+];
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (t) => t * t * (3 - 2 * t);
+const fade = (t, a = 0.04, b = 0.96) => clamp01(Math.min((t - a) / 0.14, (b - t) / 0.14)); // 들어올 때·나갈 때 흐려짐
+// x, y 는 화면 너비·높이 비율(중심 위치), w 는 화면 너비 비율(최소~최대 px), s 크기, r 회전(도)
+const TRAVELERS = [
+  // 히어로 → 친구들: 두 페이지 사이 '구름 구간'(.cloud-gap)에서 구름이 몰려와 화면을 덮었다가 걷힘
+  ...[
+    // [시작(x,y), 덮었을 때(x,y), 걷힐 때(x,y), 크기, 좌우반전]
+    [[-0.3, 1.25], [0.2, 0.42], [-0.6, 0.15], 2.2, false],
+    [[1.3, 1.15], [0.8, 0.5], [1.6, 0.3], 2.3, true],
+    [[0.5, 1.6], [0.5, 0.78], [0.55, -0.7], 2.0, false],
+    [[0.15, 1.75], [0.32, 0.12], [-0.3, -0.6], 1.7, true],
+    [[0.9, 1.8], [0.68, 0.2], [1.3, -0.6], 1.8, false],
+    [[0.45, 2.0], [0.52, 0.4], [0.45, -0.9], 1.5, true],
+  ].map(([a, b, c, size, flip], k) => ({
+    seam: 'cloud-gap', img: 'prop-cloud.png', w: [0.34, 260, 720], flip,
+    at: (t) => {
+      const i = smooth(clamp01(t / 0.4)), o = smooth(clamp01((t - 0.6) / 0.4)); // 몰려옴 0~0.4 · 가득 0.4~0.6 · 걷힘 0.6~1
+      const drift = Math.sin(t * 4 + k) * 0.03; // 가득 찬 동안에도 둥실둥실
+      return { x: lerp(lerp(a[0], b[0], i), c[0], o) + drift, y: lerp(lerp(a[1], b[1], i), c[1], o), s: size * lerp(0.7, 1, i) * lerp(1, 1.25, o) };
+    },
+  })),
+  // 영상관 → 게임: 장난감이 통통 튀어 올라옴
+  { seam: 'games', img: 'icon-buddy.png', w: [0.13, 110, 220], at: (t) => ({ x: 0.1, y: lerp(1.15, -0.2, t) - Math.abs(Math.sin(t * Math.PI * 3)) * 0.08, r: Math.sin(t * 9) * 14 }) },
+  { seam: 'games', img: 'icon-learn.png', w: [0.12, 100, 200], at: (t) => ({ x: 0.9, y: lerp(1.3, -0.1, t) - Math.abs(Math.sin(t * Math.PI * 3 + 1)) * 0.08, r: Math.sin(t * 8 + 2) * 12 }) },
+  { seam: 'games', img: 'prop-stars.png', w: [0.08, 70, 140], at: (t) => ({ x: lerp(0.78, 0.7, t), y: lerp(1.2, 0.05, t), r: t * 120 }) },
+  // 게임 → 소개: 풍선과 종이비행기가 하늘로
+  { seam: 'about', img: 'prop-balloons.png', w: [0.15, 120, 260], at: (t) => ({ x: 0.84 + Math.sin(t * 6) * 0.02, y: lerp(1.25, -0.4, t), r: Math.sin(t * 5) * 6 }) },
+  { seam: 'about', img: 'prop-balloons.png', w: [0.11, 90, 200], flip: true, at: (t) => ({ x: 0.12 + Math.sin(t * 5 + 1) * 0.02, y: lerp(1.45, -0.25, t), r: Math.sin(t * 6) * 6 }) },
+  { seam: 'about', img: 'prop-plane.png', w: [0.12, 100, 220], at: (t) => ({ x: lerp(-0.15, 1.15, t), y: lerp(0.8, 0.12, t) + Math.sin(t * 7) * 0.03, r: lerp(-6, -18, t) }) },
+  // 소개 → 푸터: 별이 쏟아짐
+  { seam: 'contact', img: 'prop-stars.png', w: [0.1, 80, 180], at: (t) => ({ x: 0.14, y: lerp(-0.25, 1.05, t), r: t * 180 }) },
+  { seam: 'contact', img: 'prop-stars.png', w: [0.08, 70, 150], at: (t) => ({ x: 0.52, y: lerp(-0.45, 0.9, t), r: -t * 160 }) },
+  { seam: 'contact', img: 'prop-stars.png', w: [0.12, 90, 200], at: (t) => ({ x: 0.86, y: lerp(-0.35, 1.0, t), r: t * 140 }) },
+];
+
+function buildWorld(gen) {
+  if (!SCENES.every((s) => gen(s.bg))) return; // 배경이 다 있을 때만 (없으면 섹션 색 그대로)
+  const world = document.createElement('div');
+  world.className = 'world';
+  world.setAttribute('aria-hidden', 'true');
+  const layers = SCENES.map((s) => {
+    const el = document.createElement('i');
+    el.style.setProperty('--bg', `url(${gen(s.bg)})`);
+    if (s.veil) el.style.setProperty('--veil', s.veil);
+    world.append(el);
+    return { el, section: document.getElementById(s.id) };
+  });
+  document.body.prepend(world);
+  document.documentElement.classList.add('world-on');
+
+  const box = document.createElement('div');
+  box.className = 'travelers';
+  box.setAttribute('aria-hidden', 'true');
+  const props = reduced ? [] : TRAVELERS.filter((p) => gen(p.img)).map((p) => {
+    const img = new Image();
+    img.src = gen(p.img);
+    img.alt = '';
+    box.append(img);
+    return { ...p, el: img, section: document.getElementById(p.seam) };
+  });
+  document.body.append(box);
+
+  // 다음 섹션의 윗변이 화면 아래 110% → 위 -50% 를 지나는 동안 0 → 1 (SEAM_START·SEAM_LENGTH 로 길이 조절)
+  const seam = (section) => clamp01((innerHeight * SEAM_START - section.getBoundingClientRect().top) / (innerHeight * SEAM_LENGTH));
+  const gap = $('.cloud-gap');
+  const gapT = () => {
+    const r = gap.getBoundingClientRect();
+    return r.height ? clamp01((innerHeight - r.top) / (r.height + innerHeight)) : null;
+  };
+  let frame = 0;
+  function update() {
+    frame = 0;
+    const cloudT = gapT();
+    // 배경: 뒤 장면 위에 다음 장면이 겹쳐 나타나고, 완전히 덮인 아래 장면은 숨김
+    // 친구들 배경은 구름이 화면을 덮고 있는 동안(구름 구간 35~65%) 바뀜
+    const amounts = layers.map((l, i) => (i === 0 ? 1
+      : i === 1 && cloudT !== null ? smooth(clamp01((cloudT - 0.35) / 0.3))
+      : smooth(seam(l.section))));
+    let base = 0;
+    amounts.forEach((a, i) => { if (a >= 0.999) base = i; });
+    layers.forEach((l, i) => {
+      const a = amounts[i], show = i >= base && a > 0.001;
+      l.el.style.visibility = show ? 'visible' : 'hidden';
+      if (!show) return;
+      l.el.style.opacity = a.toFixed(3);
+      l.el.style.transform = reduced || i === 0 ? '' : `scale(${(1.08 - 0.08 * a).toFixed(4)})`;
+    });
+    // 소품: 구간 안에서만 보임
+    const vw = innerWidth, vh = innerHeight;
+    props.forEach((p) => {
+      const t = p.seam === 'cloud-gap' ? (cloudT ?? 0) : seam(p.section);
+      if (t <= 0 || t >= 1) { p.el.style.visibility = 'hidden'; return; }
+      const { x, y, s = 1, r = 0 } = p.at(t);
+      const [frac, min, max] = p.w;
+      p.el.style.width = `${Math.min(max, Math.max(min, vw * frac))}px`;
+      p.el.style.visibility = 'visible';
+      p.el.style.opacity = fade(t).toFixed(3);
+      p.el.style.transform = `translate(${(x * vw).toFixed(1)}px, ${(y * vh).toFixed(1)}px) translate(-50%, -50%) rotate(${r.toFixed(1)}deg) scale(${p.flip ? -s : s}, ${s})`;
+    });
+  }
+  addEventListener('scroll', () => { frame ||= requestAnimationFrame(update); }, { passive: true });
+  addEventListener('resize', update);
+  update();
+}
+
+// ---------- 등장 애니메이션: 섹션 내용이 아래에서 차례로 떠오름 ----------
+if (!reduced) {
+  document.documentElement.classList.add('js-reveal');
+  const groups = [
+    ['#friends .section-head'], ['.family'], ['.duo .buddy', 2], ['.friends-more > *', 2],
+    ['#reel .filmstrip'], ['#reel .reel-more'],
+    ['#games .section-head'], ['.chips'], ['.game', 3],
+    ['#about .section-head'], ['.about-stage'], ['.stats li', 4], ['#about .sub-head'], ['.values li', 3],
+    ['.footer-copy > *', 3],
+  ];
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+  groups.forEach(([sel, per = 1]) => $$(sel).forEach((el, i) => {
+    el.classList.add('reveal');
+    el.style.setProperty('--i', i % per);
+    io.observe(el);
+  }));
+}
 
 // ---------- 푸터 볼풀 ----------
 $$('[data-store]').forEach((a) => (a.href = stores[a.dataset.store]));

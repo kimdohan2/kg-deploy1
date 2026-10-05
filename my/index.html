@@ -47,6 +47,9 @@
       <p class="hero-hint" aria-hidden="true"><span>👆</span> 친구들을 잡아서 던져 보세요<span class="hint-more"> · 빈 곳을 누르면 새 친구가 나와요</span></p>
     </section>
 
+    <!-- 히어로와 친구들 사이: 구름만 지나가는 구간 (배경 이미지가 있을 때만 생김) -->
+    <div class="cloud-gap" aria-hidden="true"></div>
+
     <!-- 2. 코코비 친구들 -->
     <section id="friends" class="friends">
       <div class="clouds" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -81,6 +84,9 @@
 
     <!-- 3. 영상관 (Merci-Michel 쇼릴 구조) -->
     <section id="reel" class="reel">
+      <!-- 스크롤하는 동안 무대가 화면에 고정되고, 그만큼 커튼이 걷힘 -->
+      <div class="reel-pin">
+      <div class="reel-stage">
       <div class="section-head">
         <p class="eyebrow">놀이 영상관</p>
         <h2>오늘은 어떤 놀이를 볼까?</h2>
@@ -97,6 +103,14 @@
         </div>
         <div class="tv-antenna" aria-hidden="true"><i></i><i></i></div>
         <div class="tv-knobs" aria-hidden="true"><i></i><i></i></div>
+        <img class="prop prop-popcorn" data-gen="prop-popcorn.png" alt="" />
+      </div>
+      <div class="curtains" aria-hidden="true">
+        <div class="curtain curtain-left"></div>
+        <div class="curtain curtain-right"></div>
+        <p class="curtain-sign">🎬 곧 상영해요!<span>스크롤하면 막이 열려요</span></p>
+      </div>
+      </div>
       </div>
       <div class="filmstrip" role="tablist" aria-label="예고편 목록"></div>
       <div class="reel-more">
@@ -110,6 +124,7 @@
       <div class="section-head">
         <p class="eyebrow">장난감 상자</p>
         <h2>어떤 놀이가 좋아?</h2>
+        <img class="prop prop-toybox" data-gen="prop-toybox.png" alt="" />
       </div>
       <div class="chips" role="tablist" aria-label="게임 분류"></div>
       <ul class="game-grid"></ul>
@@ -135,17 +150,17 @@
       <h3 class="sub-head">앱 · 영상 · 동요, 놀이가 이어져요</h3>
       <ul class="values mix">
         <li style="--c: var(--sky)">
-          <span class="v-icon">📱</span>
+          <span class="v-icon" data-gen-icon="icon-app.png">📱</span>
           <h3>앱</h3>
           <p>누르고 끌면 바로 반응하는 인터랙티브 앱. 코코비 앱만 8,000만 다운로드를 넘었어요.</p>
         </li>
         <li style="--c: var(--pink)">
-          <span class="v-icon">📺</span>
+          <span class="v-icon" data-gen-icon="icon-video.png">📺</span>
           <h3>영상</h3>
           <p>코코비 한국어·영어·스페인어 채널과 키글TV에서 노래와 이야기를 만나요.</p>
         </li>
         <li style="--c: var(--yellow)">
-          <span class="v-icon">🎵</span>
+          <span class="v-icon" data-gen-icon="icon-music.png">🎵</span>
           <h3>동요</h3>
           <p>멜론, 스포티파이, 애플 뮤직에서 6개 언어로 듣는 코코비 동요.</p>
         </li>
@@ -154,17 +169,17 @@
       <h3 class="sub-head">우리가 놀이를 만드는 방법</h3>
       <ul class="values">
         <li style="--c: var(--pink)">
-          <span class="v-icon">🎈</span>
+          <span class="v-icon" data-gen-icon="icon-touch.png">🎈</span>
           <h3>손끝으로 바로</h3>
           <p>글을 몰라도 괜찮아요. 누르고, 끌고, 흔들면 바로 반응하는 놀이를 만들어요.</p>
         </li>
         <li style="--c: var(--sky)">
-          <span class="v-icon">🧸</span>
+          <span class="v-icon" data-gen-icon="icon-buddy.png">🧸</span>
           <h3>코코비와 함께</h3>
           <p>치과, 병원, 빵집, 우주까지. 익숙한 친구와 함께라면 처음 해보는 일도 두렵지 않아요.</p>
         </li>
         <li style="--c: var(--yellow)">
-          <span class="v-icon">🌱</span>
+          <span class="v-icon" data-gen-icon="icon-learn.png">🌱</span>
           <h3>배움은 몰래</h3>
           <p>양치 습관, 직업, 공룡 이름. 신나게 놀다 보면 어느새 하나씩 알게 돼요.</p>
         </li>
