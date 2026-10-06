@@ -1,4 +1,4 @@
-// 게임 데이터 — kg-test1_1/src/content.js 에서 가져온 실제 스토어 정보
+// 게임 데이터 — 실제 스토어 정보 (Google Play / YouTube)
 // cat: 시안용 분류(놀이 유형). 필요하면 여기만 고치면 됩니다.
 
 const img = (slug, n) => `assets/games/${slug}/${String(n).padStart(2, '0')}.jpg`;
