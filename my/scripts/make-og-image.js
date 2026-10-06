@@ -34,7 +34,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
   <div class="copy">
     <div class="logo"><span class="blob"><i></i><i></i></span>KIGLE</div>
     <div class="badge">꼬마공룡 코코비 &amp; 친구들</div>
-    <h1>아이들이 처음 노는<br><span>놀이터</span></h1>
+    <h1>아이들의 첫 번째<br><span>놀이터</span></h1>
   </div>
   <img class="chars" src="https://kigle.co.kr/img/custom/main_visual_character_m.png" alt="">
   <div class="url">kg-deploy1-wheat.vercel.app</div>
