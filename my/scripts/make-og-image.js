@@ -1,5 +1,6 @@
-// OG 이미지 만들기: imagegen 배경(assets/gen/og-bg.jpg) 위에 로고·제목·주소를 사이트 폰트로 얹어 1200x630 으로 저장
-// 배경은 scripts/prompts.jsonl 의 og-bg 항목 (bash scripts/generate-assets.sh 로 생성)
+// OG 이미지 만들기: imagegen 배경(assets/gen/og-bg.jpg) 위에 코코비 공식 캐릭터와 로고·제목·주소를 얹어 1200x630 으로 저장
+// 배경: scripts/prompts.jsonl 의 og-bg 로 만든 그림에서 imagegen edit 로 장난감들을 지운 빈 언덕
+// 캐릭터: kigle.co.kr 공식 3D 캐릭터 그림 (AI 로 다시 그리지 않고 원본 그대로 사용)
 // 사용: node scripts/make-og-image.js og-image.jpg   (전역 playwright + Chrome 필요)
 const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
 const fs = require('fs');
@@ -26,6 +27,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
   h1 { font-weight: 400; font-size: 92px; line-height: 1.12; letter-spacing: -0.01em; text-shadow: 0 5px 0 #fff; }
   h1 span { display: inline-block; color: var(--pink); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill;
     transform: rotate(-2deg); font-size: 112px; }
+  .chars { position: absolute; right: 18px; bottom: 26px; width: 660px; filter: drop-shadow(0 10px 8px rgba(58,46,92,.18)); }
   .url { position: absolute; left: 64px; bottom: 50px; padding: 10px 24px; font-size: 26px; background: var(--yellow);
     border: var(--line); border-radius: 999px; box-shadow: 0 5px 0 var(--ink); }
 </style></head><body>
@@ -34,6 +36,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
     <div class="badge">꼬마공룡 코코비 &amp; 친구들</div>
     <h1>아이들이 처음 노는<br><span>놀이터</span></h1>
   </div>
+  <img class="chars" src="https://kigle.co.kr/img/custom/main_visual_character_m.png" alt="">
   <div class="url">kg-deploy1-wheat.vercel.app</div>
 </body></html>`;
 
