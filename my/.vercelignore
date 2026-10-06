@@ -2,3 +2,5 @@
 .claude/
 scripts/
 serve.py
+dist/
+wrangler.jsonc

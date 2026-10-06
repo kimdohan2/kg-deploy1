@@ -1,0 +1,14 @@
+// Cloudflare Workers 정적 사이트 배포 설정
+// 사이트에 필요한 파일만 dist/ 로 복사해서 올립니다 (.env, node_modules, scripts 등은 올라가지 않음)
+// 배포: npx wrangler deploy   /  로컬 확인: npx wrangler dev
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "kigle-landing",
+	"compatibility_date": "2026-10-01",
+	"build": {
+		"command": "rm -rf dist && mkdir dist && cp -R index.html styles.css js assets og-image.jpg dist/ && find dist -name .DS_Store -delete"
+	},
+	"assets": {
+		"directory": "./dist"
+	}
+}
