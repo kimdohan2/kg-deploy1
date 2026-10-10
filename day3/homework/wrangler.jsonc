@@ -1,0 +1,9 @@
+{
+	"$schema": "https://unpkg.com/wrangler/config-schema.json",
+	"name": "work-docs",
+	"compatibility_date": "2026-10-01",
+	// 정적 사이트: public 폴더만 배포 (Worker 스크립트 없음)
+	"assets": {
+		"directory": "./public"
+	}
+}

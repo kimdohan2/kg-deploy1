@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>업무 매뉴얼 - Unity 클라이언트 개발자</title>
+  <meta name="description" content="키글 스튜디오 Unity 클라이언트 개발자의 업무를 매뉴얼 형식으로 정리한 사이트">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" aria-expanded="false"><span></span></button>
+    <a class="logo" href="#/">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>
+      </span>
+      <span class="logo-text"><b>Work</b><span> Documentation</span></span>
+    </a>
+    <nav class="menu">
+      <a href="#/" data-mode="manual">매뉴얼</a>
+      <a href="#/reference" data-mode="reference">업무 레퍼런스</a>
+    </nav>
+    <form class="search" id="searchForm" role="search">
+      <input type="search" id="searchInput" placeholder="매뉴얼 검색..." aria-label="매뉴얼 검색">
+      <button type="submit" aria-label="검색">
+        <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
+      </button>
+    </form>
+    <a class="header-cta" href="#/about">개발자 소개 <span aria-hidden="true">→</span></a>
+  </header>
+
+
+  <aside class="sidebar" id="sidebar">
+    <form class="search search-mobile" id="searchFormMobile" role="search">
+      <input type="search" id="searchInputMobile" placeholder="매뉴얼 검색..." aria-label="매뉴얼 검색">
+    </form>
+    <h2 id="sidebarTitle">매뉴얼</h2>
+    <nav class="toc" id="toc"></nav>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="content" id="content">
+    <div class="breadcrumbs" id="breadcrumbs"></div>
+    <div class="nextprev" id="nextprevTop"></div>
+    <article class="section" id="page"></article>
+    <div class="nextprev" id="nextprevBottom"></div>
+    <footer class="footer">
+      <p>월 소요 시간은 업무 세분화 표의 추정값(월 빈도 × 회당 소요)으로 계산했습니다. 이 사이트는 Unity 매뉴얼의 화면 구성을 참고한 개인 업무 소개 페이지이며 Unity Technologies와 관련이 없습니다.</p>
+    </footer>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
