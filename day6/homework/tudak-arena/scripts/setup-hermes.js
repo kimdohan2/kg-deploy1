@@ -1,16 +1,16 @@
 // Hermes 프로필 3개(코코·러비·Rou)를 이 프로젝트 설정대로 만들고 맞춘다.
+// 프로필은 hermes-home/profiles/<이름>에 따로 있고, 게이트웨이도 각자 자기 포트로 따로 돈다.
 // 여러 번 실행해도 안전하다: 없는 프로필만 만들고, 설정은 필요한 키만 덮어쓴다.
 //   npm run setup-hermes
 import { existsSync, readFileSync, writeFileSync, chmodSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { homedir } from 'node:os';
 import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import YAML from 'yaml';
+import { HERMES_HOME, hermesBin, hermesEnv, hasHermes } from './hermes.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const HERMES_HOME = process.env.HERMES_HOME || `${homedir()}/.hermes`;
 
 const idFromToken = t => Buffer.from(t.split('.')[0], 'base64').toString('utf8');
 
@@ -30,10 +30,7 @@ const required = ['ANTHROPIC_API_KEY', 'DISCORD_TOKEN_REFEREE', 'DISCORD_OWNER_I
 const missing = required.filter(k => !env[k]);
 if (missing.length) fail(`.env에 아직 비어 있는 값이 있어요: ${missing.join(', ')}`);
 
-const hermesBin = [`${homedir()}/.local/bin/hermes`, 'hermes'].find(p => {
-  try { execFileSync(p, ['--version'], { stdio: 'ignore' }); return true; } catch { return false; }
-});
-if (!hermesBin) fail('hermes 명령을 찾을 수 없어요. 먼저 Hermes를 설치해 주세요 (README 참고).');
+if (!hasHermes()) fail('hermes-agent 폴더에 Hermes가 설치돼 있지 않아요. 먼저 설치해 주세요 (README 2단계).');
 
 const refereeId = idFromToken(env.DISCORD_TOKEN_REFEREE);
 const names = Object.fromEntries(characters.bots.map(b => [b.id, b.name]));
@@ -76,13 +73,15 @@ for (const bot of characters.bots) {
   const home = `${HERMES_HOME}/profiles/${bot.id}`;
   if (!existsSync(home)) {
     console.log(`· 프로필 만들기: ${bot.id}`);
-    execFileSync(hermesBin, ['profile', 'create', bot.id], { stdio: 'inherit' });
+    // 별명 명령(~/.local/bin/<이름>)과 기본 스킬은 만들지 않는다. 봇은 대화만 한다.
+    execFileSync(hermesBin, ['profile', 'create', bot.id, '--no-alias', '--no-skills'], { stdio: 'inherit', env: hermesEnv });
   }
   mkdirSync(home, { recursive: true });
 
   const soul = render(`${readFileSync(`${root}bots/${bot.id}.md`, 'utf8')}\n${common}`, bot.name);
   writeFileSync(`${home}/SOUL.md`, soul);
 
+  const existingKey = existsSync(`${home}/.env`) && readFileSync(`${home}/.env`, 'utf8').match(/^API_SERVER_KEY=(.+)$/m)?.[1];
   mergeEnv(`${home}/.env`, {
     ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY,
     DISCORD_BOT_TOKEN: env[bot.tokenEnv],
@@ -95,6 +94,11 @@ for (const bot of characters.bots) {
     DISCORD_REACTIONS: 'false',
     DISCORD_REPLY_TO_MODE: 'off',
     DISCORD_HISTORY_BACKFILL_LIMIT: '12',
+    // 봇마다 자기 포트의 Hermes API 서버
+    API_SERVER_ENABLED: 'true',
+    API_SERVER_PORT: String(bot.apiPort),
+    API_SERVER_HOST: '127.0.0.1',
+    API_SERVER_KEY: existingKey || randomBytes(24).toString('hex'),
   });
 
   mergeYaml(`${home}/config.yaml`, {
@@ -113,31 +117,17 @@ for (const bot of characters.bots) {
     'discord.voice_channel_inactivity_timeout_seconds': 0,
     // 디스코드에서는 도구를 거의 쓰지 않게 (대화만)
     'platform_toolsets.discord': ['todo'],
+    // 기본 프로필 게이트웨이 하나에 묶지 않고, 이 프로필의 게이트웨이를 따로 돌린다 (그래야 포트가 따로 생김)
+    'gateway.standalone': true,
+    // 심판(봇)이 부르는 메시지를 봇 대화 폭주로 오해해 막지 않게 한도를 넉넉히 (기본 5분에 20개)
+    'gateway.bot_loop_guard.max_events': 60,
   });
-  console.log(`✓ ${bot.name}: SOUL.md · .env · config.yaml (목소리 ${bot.voice}, 속도 ${bot.speed})`);
+  console.log(`✓ ${bot.name}: SOUL.md · .env · config.yaml (포트 ${bot.apiPort}, 목소리 ${bot.voice}, 속도 ${bot.speed})`);
 }
-
-// ---------- 기본 프로필: 게이트웨이와 별도 포트 ----------
-// 기본 프로필의 게이트웨이 하나가 세 봇을 함께 실행한다. Hermes API 서버를 별도 포트로 연다.
-
-const defaultEnv = `${HERMES_HOME}/.env`;
-const existingKey = existsSync(defaultEnv) && readFileSync(defaultEnv, 'utf8').match(/^API_SERVER_KEY=(.+)$/m)?.[1];
-mergeEnv(defaultEnv, {
-  ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY,
-  API_SERVER_ENABLED: 'true',
-  API_SERVER_PORT: String(characters.hermesApiPort),
-  API_SERVER_HOST: '127.0.0.1',
-  API_SERVER_KEY: existingKey || randomBytes(24).toString('hex'),
-});
-mergeYaml(`${HERMES_HOME}/config.yaml`, {
-  'model.provider': 'anthropic',
-  'model.default': characters.model,
-});
-console.log(`✓ 기본 프로필: Hermes API 서버 포트 ${characters.hermesApiPort}`);
 
 console.log(`
 다음 단계
-  1) 게이트웨이 켜기 (봇 3개가 함께 켜져요):  ${hermesBin} gateway
+  1) 봇 켜기 (게이트웨이 3개가 함께 켜져요):  npm run bots
   2) 디스코드 음성방 "투닥-아레나"에 들어간 뒤, #투닥-중계에서 봇마다 /voice join 실행
   3) 게임 켜기:  npm start  →  http://localhost:${env.GAME_PORT || 3300}
 `);

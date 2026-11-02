@@ -1,2 +1,5 @@
 node_modules/
 .env
+# 노트북마다 따로 설치하는 Hermes 코드와 봇 데이터
+hermes-agent/
+hermes-home/

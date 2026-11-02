@@ -183,7 +183,8 @@ function renderHud() {
     const title = s.winner === 'player' && role === 'player' ? '내가 우승!' : `${escapeHtml(w?.name ?? '')} 우승!`;
     html = `<div class="mid">${title}</div><div class="small">다음 판까지 ${Math.max(0, Math.ceil(s.timer))}초</div>`;
   } else if (s.phase === 'waiting' && role === 'spectator') {
-    html = '<div class="small">플레이어를 기다리는 중</div>';
+    // 플레이어가 나가서 자리가 비면, 관전하던 사람이 이어서 할 수 있게 시작 화면을 다시 보여준다
+    $('#start').hidden = false;
   }
   if (role === 'spectator' && s.phase !== 'waiting') html += '<div class="small">관전 중</div>';
   if (center.innerHTML !== html) center.innerHTML = html;

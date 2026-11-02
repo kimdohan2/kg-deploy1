@@ -1,6 +1,5 @@
 {
   "model": "claude-opus-5-5",
-  "hermesApiPort": 8650,
   "player": { "color": "#7CE07C" },
   "bots": [
     {
@@ -10,6 +9,7 @@
       "color": "#FF8FAB",
       "style": "chaser",
       "tokenEnv": "DISCORD_TOKEN_COCO",
+      "apiPort": 8651,
       "voice": "ko-KR-SunHiNeural",
       "speed": 1.15
     },
@@ -20,6 +20,7 @@
       "color": "#7C8CE6",
       "style": "cautious",
       "tokenEnv": "DISCORD_TOKEN_LOVEY",
+      "apiPort": 8652,
       "voice": "ko-KR-InJoonNeural",
       "speed": 0.9
     },
@@ -30,6 +31,7 @@
       "color": "#FFA53D",
       "style": "reckless",
       "tokenEnv": "DISCORD_TOKEN_ROU",
+      "apiPort": 8653,
       "voice": "ko-KR-HyunsuMultilingualNeural",
       "speed": 1.2
     }

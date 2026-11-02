@@ -6,7 +6,10 @@
   "private": true,
   "scripts": {
     "start": "node server/index.js",
-    "setup-hermes": "node scripts/setup-hermes.js"
+    "bots": "node scripts/start-bots.js",
+    "setup-hermes": "node scripts/setup-hermes.js",
+    "hermes": "node scripts/hermes.js",
+    "share": "caffeinate -i cloudflared tunnel --url http://localhost:3300"
   },
   "dependencies": {
     "discord.js": "^14.28.0",
