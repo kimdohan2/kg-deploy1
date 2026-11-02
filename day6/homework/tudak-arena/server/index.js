@@ -7,6 +7,7 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { Game, R0, PR } from './game.js';
 import { Referee } from './referee.js';
+import { VoiceFloor } from './floor.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 dotenv.config({ path: `${root}.env`, quiet: true });
@@ -26,7 +27,8 @@ app.get('/api/config', (req, res) => res.json({
 const server = createServer(app);
 const io = new Server(server);
 const game = new Game(characters.bots);
-const referee = new Referee({ game, bots: characters.bots, cfg: refereeCfg, env: process.env, io });
+const voice = new VoiceFloor(refereeCfg.voiceFloor);
+const referee = new Referee({ game, bots: characters.bots, player: characters.player, cfg: refereeCfg, env: process.env, io, voice });
 
 // 조작은 먼저 들어온 한 명만, 나머지는 관전
 let controller = null;
@@ -50,6 +52,10 @@ io.on('connection', socket => {
     if (socket.id === controller) game.setInput(input);
   });
 
+  socket.on('restart', () => {
+    if (socket.id === controller) game.restart();
+  });
+
   socket.on('chatter', on => referee.setEnabled(!!on));
 
   socket.on('disconnect', () => {
@@ -70,6 +76,27 @@ setInterval(() => {
   last = now;
   if (++frame % 2 === 0) io.emit('state', game.snapshot());
 }, 1000 / 60);
+
+// 봇(Hermes)들만 쓰는 곳. 친구 공유(터널)는 3300만 열어서 여기는 내 컴퓨터에서만 닿는다.
+//   /voice-listener  사람이 음성으로 한 이 말, 누가 들어? (Jev)
+//   /floor/acquire   음성방에서 말할 차례 받기 (차례가 올 때까지 기다렸다가 답함)
+//   /floor/release   다 말했음
+const JUDGE_PORT = PORT + 1;
+createServer(async (req, res) => {
+  let body = '';
+  for await (const chunk of req) body += chunk;
+  let data = {};
+  try { data = JSON.parse(body || '{}'); } catch {}
+  const reply = obj => res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(obj));
+  if (req.method !== 'POST') { res.writeHead(404).end(); return; }
+  if (req.url === '/voice-listener') {
+    const speech = String(data.speech || '').slice(0, 500);
+    return reply(speech ? await referee.voiceListener(speech) : { bot: null, by: 'none' });
+  }
+  if (req.url === '/floor/acquire') return reply({ granted: await voice.acquire(String(data.bot || '?')) });
+  if (req.url === '/floor/release') { voice.release(String(data.bot || '?')); return reply({ ok: true }); }
+  res.writeHead(404).end();
+}).listen(JUDGE_PORT, '127.0.0.1');
 
 server.listen(PORT, () => {
   console.log(`투닥 아레나: http://localhost:${PORT}`);

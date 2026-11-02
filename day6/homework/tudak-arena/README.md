@@ -76,15 +76,26 @@ npm run setup-hermes
 
 1. **봇 켜기**: 터미널 하나에서 `npm run bots` (봇 3개의 게이트웨이가 각자 포트로 함께 켜져요. 이 창은 켜 둔 채로, 끌 때는 Ctrl-C)
 2. **게임 켜기**: 다른 터미널에서 `npm start` → 브라우저로 http://localhost:3300
-3. **음성방 연결**: 디스코드 음성방 **투닥-아레나**에 들어간 뒤, **#투닥-중계** 채팅창에서 `/voice join`을 봇마다 한 번씩 (목록에서 코코·러비·Rou 앱을 골라 3번)
+3. **음성방 들어가기**: 내가 디스코드 음성방 **투닥-아레나**에 들어가면 코코·러비·Rou가 **알아서 따라 들어와요**. 내가 나가면 봇들도 같이 나가요.
+   - 봇을 켜기 전부터 음성방에 있었다면, 한 번 나갔다가 다시 들어오세요(들어오는 순간을 보고 따라와요).
+   - 손으로 넣고 빼려면: **#투닥-중계**에서 `/voice` → 봇 고르기 → mode **join**(들어오기) / **leave**(나가기)
 4. 웹에서 이름 넣고 **시작하기** → 게임하면서 음성방에서 봇들 수다 듣기
+
+음성방에서 말 걸기: 이름을 부르면 그 봇 한 명만 대답해요("러비야 ~", "루야 ~"). 이름이 없으면 Jev가 대화 흐름을 보고 누구에게 한 말인지 골라요(모두에게 한 말이면 코코). 봇들은 한 번에 한 명씩 말해요.
+
+**Jev 판단(선택)**: `.env`에 `TYPESAFE_API_KEY`(https://console.typesafe.ai/keys)를 넣으면 "누구에게 한 말인지", "친구 말에 받아칠지"를 Jev가 0.2초쯤에 판단해요. 없으면 이름·확률 규칙대로 해요.
+
+봇 내보내기:
+- **다 같이**: 내가 음성방에서 나가기
+- **한 명만**: **#투닥-중계**에서 `/voice` → 그 봇 고르기 → mode **leave**
+- **완전히 끄기**: `npm run bots` 창에서 Ctrl-C (디스코드에서 오프라인이 돼요)
 
 조작: 방향키 / WASD 이동, 스페이스 돌진. 웹 화면 오른쪽 위 **봇 수다** 버튼으로 수다를 잠깐 끌 수 있어요(토큰 절약).
 
 ## 친구들과 같이 하기
 내 노트북에서 게임과 봇을 켜 두고, 게임 주소만 인터넷에 열어서 공유해요. 노트북이 켜져 있는 동안만 돼요.
 
-1. 위 "놀 때마다 하는 것" 1~3번대로 봇, 게임, 음성방을 켜요. `/voice join`은 나만 할 수 있어요.
+1. 위 "놀 때마다 하는 것" 1~3번대로 봇, 게임, 음성방을 켜요. 봇은 나(`.env`의 `DISCORD_OWNER_ID`)만 따라 들어와요.
 2. 터미널을 하나 더 열어 `npm run share`를 실행해요. 처음 쓰는 노트북이면 `brew install cloudflared`를 먼저 하세요.
    - 화면에 나오는 `https://….trycloudflare.com` 주소를 친구에게 보내요. 주소는 켤 때마다 바뀌어요.
    - 켜 둔 동안 노트북이 잠들지 않아요. Ctrl-C를 누르면 주소가 닫혀요.
@@ -103,7 +114,12 @@ npm run setup-hermes
 | 성격, 말투 | `bots/*.md` → `npm run setup-hermes` |
 
 - **반응 속도**: 기본 모델은 Claude Opus 5.5(`claude-opus-5-5`)예요. 대답이 늦게 느껴지면 `config/characters.json`의 `model`을 `claude-haiku-5-5`로 바꿔 보세요. 훨씬 빠르고 저렴해요.
-- **ElevenLabs로 바꾸기 (완성 단계)**: 각 프로필 `hermes-home/profiles/<이름>/config.yaml`에서 `tts.provider: elevenlabs`, `tts.elevenlabs.voice_id: <목소리 ID>`로 바꾸고, `hermes-home/profiles/<이름>/.env`에 `ELEVENLABS_API_KEY`를 넣어요.
+- **ElevenLabs로 바꾸기 (완성 단계)**:
+  1. https://elevenlabs.io 에서 API 키를 만들고(권한: Text to Speech, Voices Read) `.env`의 `ELEVENLABS_API_KEY=`에 넣어요.
+  2. `npm run voices`로 쓸 수 있는 목소리를 보고, `npm run voices -- test <voice_id> "헐 루 너 진짜!"`로 한국어를 들어 봐요. (`npm run voices -- ko`는 한국어 라이브러리 목소리, API로 쓰려면 유료 요금제)
+  3. `config/characters.json`에서 봇마다 `elevenlabsVoice`에 고른 voice_id를 넣고, `tts.provider`를 `"elevenlabs"`로 바꿔요.
+  4. `npm run setup-hermes` → 봇 다시 켜기. Edge로 돌아가려면 `tts.provider`를 `"edge"`로.
+  - 모델은 가장 빠른 `eleven_flash_v2_5`(`tts.elevenlabsModel`). ElevenLabs는 말 속도 설정이 없어서 목소리 자체로 성격을 내요.
 
 ## 문제 해결
 
@@ -125,7 +141,9 @@ tudak-arena/
 ├─ config/          characters.json, referee.json
 ├─ scripts/
 │  ├─ setup-hermes.js  봇 프로필 3개 만들기·맞추기
+│  ├─ voices.js        ElevenLabs 목소리 찾기·들어 보기 (npm run voices)
 │  ├─ start-bots.js    봇 게이트웨이 3개 켜기 (npm run bots)
+│  ├─ patch-hermes.js  Hermes 수정 적용 (음성방 소리, 한 명만 대답, 나 따라 들어오기 · 위 두 명령이 자동 실행)
 │  └─ hermes.js        이 폴더의 Hermes 실행 (npm run hermes -- ...)
 ├─ hermes-agent/    Hermes 코드 (노트북마다 clone, git 제외)
 └─ hermes-home/     Hermes 데이터: profiles/coco, lovey, rou (git 제외)

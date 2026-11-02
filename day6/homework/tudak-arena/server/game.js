@@ -17,7 +17,6 @@ const BOUNCE = 0.8;
 const DASH_KNOCK = 380;
 const PUSH_MEMORY = 3;          // 이 시간(초) 안에 부딪힌 상대를 "밀친 사람"으로 본다
 const COUNTDOWN = 3;
-const INTERMISSION = 10;
 
 const rand = (a, b) => a + Math.random() * (b - a);
 
@@ -50,6 +49,14 @@ export class Game extends EventEmitter {
 
   setInput(input) {
     this.human.input = input || {};
+  }
+
+  // 판이 끝나면(intermission) 자동으로 넘어가지 않고, 플레이어가 다시 시작을 눌러야 다음 판.
+  // 플레이어가 먼저 떨어졌으면 판이 끝나기 전에도 바로 새 판을 시작할 수 있다(이번 판 우승은 없음).
+  restart() {
+    if (!this.human.active) return;
+    const me = this.entities.find(e => e.id === 'player');
+    if (this.phase === 'intermission' || (this.phase === 'playing' && me && !me.alive)) this.startCountdown();
   }
 
   startCountdown() {
@@ -87,12 +94,6 @@ export class Game extends EventEmitter {
       if (this.timer <= 0) { this.phase = 'playing'; this.emit('fx', { type: 'go' }); }
     } else if (this.phase === 'playing') {
       this.simulate(dt);
-    } else if (this.phase === 'intermission') {
-      this.timer -= dt;
-      if (this.timer <= 0) {
-        if (this.human.active) this.startCountdown();
-        else this.phase = 'waiting';
-      }
     }
   }
 
@@ -249,7 +250,7 @@ export class Game extends EventEmitter {
       this.winner = winner.id;
       this.wins[winner.id] = (this.wins[winner.id] || 0) + 1;
       this.phase = 'intermission';
-      this.timer = INTERMISSION;
+      this.timer = 0;
       this.emit('fx', { type: 'win' });
       this.emit('event', { type: 'win', winner: winner.id });
     }

@@ -1,6 +1,7 @@
 // 심판(사회자) 봇 — 게임 사건을 보고 "누가, 언제" 말할지 정해서 디스코드에서 그 봇을 멘션한다.
 // 봇들(Hermes)은 멘션받을 때만 말하므로, 수다의 양과 간격은 전부 여기서 조절된다.
 import { Client, GatewayIntentBits, Events } from 'discord.js';
+import { Judge } from './judge.js';
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -20,8 +21,10 @@ function idFromToken(token) {
 }
 
 export class Referee {
-  constructor({ game, bots, cfg, env, io }) {
+  constructor({ game, bots, player, cfg, env, io, voice }) {
     this.game = game;
+    this.callName = player?.callName || '사람 친구';   // 봇들이 사람 플레이어를 부르는 이름
+    this.voice = voice;           // 음성방 말하는 차례 (floor.js)
     this.bots = bots;
     this.cfg = cfg;
     this.env = env;
@@ -32,11 +35,19 @@ export class Referee {
     this.botIds = new Map();      // botId -> 디스코드 사용자 ID
     this.idToBot = new Map();     // 디스코드 사용자 ID -> botId
     this.nextFree = new Map();    // botId -> 다시 말할 수 있는 시각
-    this.speaking = new Map();    // botId -> 대답을 기다리기 시작한 시각
+    this.speaking = new Map();    // botId -> 대답을 기다리기 시작한 시각 (말하는 중인 봇)
+    this.floorAt = 0;             // 앞사람이 말을 끝낸 뒤 잠깐 쉬는 시간이 끝나는 시각
+    this.queue = [];              // 누가 말하는 중이라 미뤄 둔 중요한 한마디 (탈락·우승)
     this.pending = new Map();     // botId -> 대꾸 깊이
     this.recent = [];             // 최근 1분 동안 부른 시각
     this.buffer = [];
     this.lastSpeech = Date.now();
+    this.log = [];                // 최근 대화 (Jev 판단에 흐름으로 넘긴다)
+    this.bubbles = new Map();     // botId -> 목소리가 나오면 웹에 띄울 말풍선
+    // 웹 말풍선은 그 봇의 목소리가 나오기 시작할 때 띄운다 (글이 목소리보다 먼저 올라오므로)
+    voice?.on('speak', id => this.showBubble(id));
+    this.judge = new Judge({ env, bots });
+    console.log(`[심판] Jev 판단: ${this.judge.enabled ? '켜짐' : '꺼짐 (TYPESAFE_API_KEY 없음 → 규칙대로)'}`);
     this.resetStats();
     for (const b of bots) {
       const id = env[b.tokenEnv] ? idFromToken(env[b.tokenEnv]) : null;
@@ -44,6 +55,7 @@ export class Referee {
     }
     game.on('event', ev => this.onGameEvent(ev));
     setInterval(() => this.idleCheck(), 5000);
+    setInterval(() => this.pump(), 300);
   }
 
   resetStats() {
@@ -87,8 +99,9 @@ export class Referee {
 
   // ---------- 이름과 기억 ----------
 
+  // 사람 플레이어는 시작 화면에 적은 이름 대신 정해 둔 호칭(characters.json의 player.callName)으로 알려준다
   name(id) {
-    if (id === 'player') return this.game.human.name;
+    if (id === 'player') return this.callName;
     return this.bots.find(b => b.id === id)?.speakName ?? id;
   }
 
@@ -251,13 +264,24 @@ export class Referee {
 
   idleCheck() {
     const g = this.game;
-    if (!g.human.active || !['playing', 'intermission'].includes(g.phase)) return;
+    // 판 사이에는 다시 시작을 기다리는 동안 계속 떠들지 않게, 게임 중에만
+    if (!g.human.active || g.phase !== 'playing') return;
     if (Date.now() - this.lastSpeech < this.cfg.idleSec * 1000) return;
     const free = this.bots.map(b => b.id).filter(id => this.available(id));
     if (free.length) this.call(pick(free), '[수다] 다들 조용하다. 게임이나 친구들 얘기로 아무 말이나 가볍게 꺼내.', { depth: 0 });
   }
 
   // ---------- 말 시키기 ----------
+
+  // 한 번에 한 명만 대사를 만든다. 대사(글)가 나오면 그 봇이 말하는 동안 다음 봇을 불러 미리 준비시킨다.
+  // 목소리는 floor.js가 한 명씩 이어 준다. 차례를 기다리는 목소리가 있으면 더 부르지 않는다(늦은 반응 방지).
+  floorFree() {
+    const now = Date.now();
+    for (const [bid, since] of this.speaking) {
+      if (now - since > this.cfg.speakingTimeoutSec * 1000) this.speaking.delete(bid);
+    }
+    return this.speaking.size < this.cfg.maxSimultaneous && now >= this.floorAt && !(this.voice?.waiting > 0);
+  }
 
   available(id) {
     const now = Date.now();
@@ -266,17 +290,43 @@ export class Referee {
     this.recent = this.recent.filter(t => now - t < 60000);
     const cap = this.cfg.perMinuteCap[this.game.phase === 'playing' ? 'playing' : 'intermission'];
     if (this.recent.length >= cap) return false;
-    for (const [bid, since] of this.speaking) {
-      if (now - since > this.cfg.speakingTimeoutSec * 1000) this.speaking.delete(bid);
-    }
-    return this.speaking.size < this.cfg.maxSimultaneous;
+    return this.floorFree();
   }
 
-  // important: 자기가 떨어졌거나 우승한 순간은 휴식 시간·상한을 무시하고 부른다
-  async call(id, text, { important = false, depth = 0 } = {}) {
-    if (!this.enabled) return;
-    if (!important && !this.available(id)) return;
+  // 중요한 한마디는 누가 말하는 중이면 버리지 않고 줄 세웠다가, 말이 끝나면 부른다 (오래된 건 버림)
+  enqueue(item) {
+    this.queue = this.queue.filter(q => q.id !== item.id);
+    this.queue.push(item);
+    if (this.queue.length > 3) this.queue.shift();
+  }
+
+  pump() {
+    if (!this.queue.length || !this.enabled || !this.floorFree()) return;
     const now = Date.now();
+    this.queue = this.queue.filter(q => now - q.at < this.cfg.queueMaxAgeSec * 1000);
+    const next = this.queue.shift();
+    if (next) this.call(next.id, next.text, { important: true, depth: next.depth });
+  }
+
+  chainAvailable() {
+    const now = Date.now();
+    this.recent = this.recent.filter(t => now - t < 60000);
+    const cap = this.cfg.perMinuteCap[this.game.phase === 'playing' ? 'playing' : 'intermission'];
+    return this.enabled && this.recent.length < cap && this.floorFree();
+  }
+
+  release(id) {
+    if (this.speaking.delete(id)) this.floorAt = Date.now() + this.cfg.gapMs;
+  }
+
+  // important: 자기가 떨어졌거나 우승한 순간은 휴식 시간·상한을 무시하고 부른다 (말하는 중이면 기다림)
+  // chain: 친구 말에 받아치는 대꾸. 그 봇의 휴식 시간은 무시하고, 말하는 사람이 없을 때만 (분당 상한은 지킴)
+  async call(id, text, { important = false, chain = false, depth = 0 } = {}) {
+    if (!this.enabled) return;
+    const now = Date.now();
+    if (important && !this.floorFree()) return this.enqueue({ id, text, depth, at: now });
+    if (chain && !this.chainAvailable()) return;
+    if (!important && !chain && !this.available(id)) return;
     this.nextFree.set(id, now + rand(...this.cfg.cooldownSec) * 1000);
     this.recent.push(now);
     this.speaking.set(id, now);
@@ -299,26 +349,98 @@ export class Referee {
     if (msg.channelId !== this.env.DISCORD_TEXT_CHANNEL_ID) return;
     const id = this.idToBot.get(msg.author.id);
     if (!id) return;
-    const line = msg.content.replace(/<@!?\d+>/g, '').trim();
+    // 봇이 사람 목소리를 알아들으면 받아 적은 글을 먼저 올린다. 이 봇이 대답할 때까지 다른 봇은 기다린다.
+    if (/^\*\*\[(음성|Voice)\]\*\*|^🎙️/.test(msg.content)) {
+      this.speaking.set(id, Date.now());
+      this.lastSpeech = Date.now();
+      this.remember(`플레이어(음성): ${msg.content.replace(/^.*?:\s*/, '')}`);
+      return;
+    }
+    // 봇이 시작 화면 이름으로 부르면 호칭으로 바꿔서 전한다 (다른 친구에게 옮지 않게)
+    const typed = this.game.human.name;
+    let line = msg.content.replace(/<@!?\d+>/g, '').trim();
+    if (typed && typed !== this.callName) line = line.split(typed).join(this.callName);
     if (!line) return;
+    // 음성방 들어감·나감 같은 안내 문구는 대답이 아니다
+    if (/\/voice (leave|join)|음성 채널에서 나갔어요|음성 채널에 참여하고 있지|voice channel/i.test(line)) return;
+    // Hermes 안내·도구 표시(📬 홈 채널, ⚙️ 도구, ⏳ 작업 중 등)도 대사가 아니다
+    if (/^(📬|⚙️|⚙|⏳|🔧|💭|⚠️|❌)|\/sethome|home channel/i.test(line)) return;
     console.log(`[${this.name(id)}] ${line}`);
-    this.io.emit('say', { id, text: line });
-    this.speaking.delete(id);
+    this.queueBubble(id, line);
+    this.release(id);
     this.lastSpeech = Date.now();
+    this.remember(`${this.name(id)}: ${line}`);
 
     const depth = this.pending.get(id);
     this.pending.delete(id);
-    if (depth === undefined) return;
-    const p = this.cfg.chainChance[depth];
-    if (!p || Math.random() >= p) return;
+    if (depth === undefined || depth >= this.cfg.chainChance.length) return;
+    this.chain(id, line, depth);
+  }
 
-    // 대답에 이름이 나온 친구가 받아치고, 없으면 아무나
+  queueBubble(id, text) {
+    clearTimeout(this.bubbles.get(id)?.timer);
+    // 벌써 말하는 중이면 바로, 아니면 목소리가 시작될 때. 음성방에 없어서 목소리가 안 나와도 6초 뒤엔 띄운다.
+    if (this.voice?.speaking === id) return this.io.emit('say', { id, text });
+    this.bubbles.set(id, { text, timer: setTimeout(() => this.showBubble(id), 6000) });
+  }
+
+  showBubble(id) {
+    const b = this.bubbles.get(id);
+    if (!b) return;
+    clearTimeout(b.timer);
+    this.bubbles.delete(id);
+    this.io.emit('say', { id, text: b.text });
+  }
+
+  remember(text) {
+    this.log.push(text);
+    if (this.log.length > 8) this.log.shift();
+  }
+
+  // 친구 말에 다른 친구가 받아칠지: Jev가 되면 말의 내용으로, 안 되면 정해진 확률로 정한다
+  async chain(id, line, depth) {
+    const started = Date.now();
     const others = this.bots.filter(b => b.id !== id);
-    const named = others.find(b => line.includes(b.speakName) || line.includes(b.name));
-    const next = named ?? pick(others);
-    setTimeout(() => {
-      if (!this.available(next.id)) return;
-      this.call(next.id, `[수다] ${iga(this.name(id))} "${line}"라고 함. 대꾸해.`, { depth: depth + 1 });
-    }, rand(...this.cfg.chainDelaySec) * 1000);
+    let next = null;
+    const judged = await this.judge.retort(id, line, this.log.slice(0, -1));
+    if (judged) {
+      const ok = judged.p >= this.cfg.retortThreshold[depth];
+      console.log(`[Jev] 받아칠 확률 ${judged.p.toFixed(2)} → ${ok ? `${this.name(judged.next)} 대꾸` : '넘어감'} (${this.judge.lastMs}ms)`);
+      if (!ok) return;
+      next = others.find(b => b.id === judged.next);
+    } else {
+      if (Math.random() >= this.cfg.chainChance[depth]) return;
+      // 대답에 이름이 나온 친구가 받아치고, 없으면 아무나
+      next = others.find(b => line.includes(b.speakName) || line.includes(b.name)) ?? pick(others);
+    }
+    if (!next) return;
+    const wait = Math.max(0, rand(...this.cfg.chainDelaySec) * 1000 - (Date.now() - started));
+    // 앞사람이 말을 끝내고 쉬는 시간(gapMs)이 지나 자리가 비면 바로 받아친다. 3초 안에 안 비면 포기.
+    const until = Date.now() + wait + 3000;
+    const tryCall = () => {
+      if (this.chainAvailable()) {
+        this.call(next.id, `[수다] ${iga(this.name(id))} "${line}"라고 함. ${this.name(id)}한테 대꾸해.`, { chain: true, depth: depth + 1 });
+      } else if (Date.now() < until) {
+        setTimeout(tryCall, 150);
+      }
+    };
+    setTimeout(tryCall, wait);
+  }
+
+  // 사람이 음성으로 한 말을 누가 들을지 (Hermes 패치가 봇마다 물어본다 → 같은 말은 한 번만 판단)
+  voiceListener(speech) {
+    const now = Date.now();
+    this.listenCache = (this.listenCache || []).filter(c => now - c.at < 10000);
+    const hit = this.listenCache.find(c => c.speech === speech);
+    if (hit) return hit.result;
+    const result = (async () => {
+      const t = Date.now();
+      const who = await this.judge.listener(speech, this.log);
+      const bot = this.bots.some(b => b.id === who) ? who : null;
+      console.log(`[Jev] "${speech}" → ${bot ? this.name(bot) : who === 'group' ? '모두에게 (기본 친구)' : '판단 못 함 (기본 친구)'} (${Date.now() - t}ms)`);
+      return { bot, by: who ? 'jev' : 'none' };
+    })();
+    this.listenCache.push({ speech, at: now, result });
+    return result;
   }
 }

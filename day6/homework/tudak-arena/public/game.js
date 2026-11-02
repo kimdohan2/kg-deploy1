@@ -42,6 +42,14 @@ nameInput.onkeydown = e => { if (e.key === 'Enter') start(); };
 
 $('#chatter').onclick = () => socket.emit('chatter', !chatterOn);
 
+// 판이 끝나거나 내가 탈락하면 다음 판은 직접 시작 (버튼은 화면 가운데에 새로 그려지므로 위임으로 받는다)
+function restart() {
+  if (role !== 'player' || !state) return;
+  const me = state.entities.find(e => e.id === 'player');
+  if (state.phase === 'intermission' || (state.phase === 'playing' && me && !me.alive)) socket.emit('restart');
+}
+document.addEventListener('click', e => { if (e.target.closest('#again')) restart(); });
+
 // ---------- 서버 소식 ----------
 
 socket.on('role', r => { role = r; });
@@ -137,6 +145,7 @@ const keyMap = {
 };
 function onKey(e, down) {
   if (document.activeElement === nameInput) return;
+  if (down && e.code === 'Enter' && !e.repeat) { restart(); return; }
   const k = keyMap[e.code];
   if (!k) return;
   e.preventDefault();
@@ -177,11 +186,16 @@ function renderHud() {
     html = `<div class="big">${Math.max(1, Math.ceil(s.timer))}</div>`;
   } else if (s.phase === 'playing') {
     if (performance.now() < goFlashUntil) html = '<div class="big">투닥!</div>';
-    else if (role === 'player' && me && !me.alive) html = '<div class="mid">탈락!</div><div class="small">친구들 싸움 구경 중...</div>';
+    else if (role === 'player' && me && !me.alive) {
+      html = '<div class="mid">탈락!</div><div class="small">친구들 싸움 구경 중...</div>'
+        + '<button id="again" class="again" type="button">다시하기 <span>Enter</span></button>';
+    }
   } else if (s.phase === 'intermission') {
     const w = s.entities.find(e => e.id === s.winner);
     const title = s.winner === 'player' && role === 'player' ? '내가 우승!' : `${escapeHtml(w?.name ?? '')} 우승!`;
-    html = `<div class="mid">${title}</div><div class="small">다음 판까지 ${Math.max(0, Math.ceil(s.timer))}초</div>`;
+    html = `<div class="mid">${title}</div>` + (role === 'player'
+      ? '<button id="again" class="again" type="button">다시 시작 <span>Enter</span></button>'
+      : '<div class="small">플레이어가 다시 시작하길 기다리는 중</div>');
   } else if (s.phase === 'waiting' && role === 'spectator') {
     // 플레이어가 나가서 자리가 비면, 관전하던 사람이 이어서 할 수 있게 시작 화면을 다시 보여준다
     $('#start').hidden = false;

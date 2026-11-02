@@ -1,9 +1,13 @@
 {
-  "model": "claude-opus-5-5",
-  "player": { "color": "#7CE07C" },
+  "model": "claude-haiku-5-5",
+  "tts": { "provider": "elevenlabs", "elevenlabsModel": "eleven_flash_v2_5" },
+  "player": { "color": "#7CE07C", "callName": "도도" },
+  "voiceDefault": "coco",
+  "voiceChannel": "투닥-아레나",
   "bots": [
     {
       "id": "coco",
+      "persona": "활발한 분위기 메이커. 리액션이 크고 친구를 챙기고, 밀리면 억울해하고 배신당하면 서운해함",
       "name": "코코",
       "speakName": "코코",
       "color": "#FF8FAB",
@@ -11,10 +15,12 @@
       "tokenEnv": "DISCORD_TOKEN_COCO",
       "apiPort": 8651,
       "voice": "ko-KR-SunHiNeural",
-      "speed": 1.15
+      "speed": 1.15,
+      "elevenlabsVoice": "cgSgspJ2msm6clMCkdW9"
     },
     {
       "id": "lovey",
+      "persona": "시크하고 말이 짧음. 침착하게 끝까지 살아남는 생존형, 무심하게 비꼼",
       "name": "러비",
       "speakName": "러비",
       "color": "#7C8CE6",
@@ -22,10 +28,12 @@
       "tokenEnv": "DISCORD_TOKEN_LOVEY",
       "apiPort": 8652,
       "voice": "ko-KR-InJoonNeural",
-      "speed": 0.9
+      "speed": 0.9,
+      "elevenlabsVoice": "bIHbv24MWmeRgasZH58o"
     },
     {
       "id": "rou",
+      "persona": "장난꾸러기 자칭 돌진왕. 막 돌진하다 혼자 떨어져도 작전이라 우김",
       "name": "Rou",
       "speakName": "루",
       "color": "#FFA53D",
@@ -33,7 +41,8 @@
       "tokenEnv": "DISCORD_TOKEN_ROU",
       "apiPort": 8653,
       "voice": "ko-KR-HyunsuMultilingualNeural",
-      "speed": 1.2
+      "speed": 1.2,
+      "elevenlabsVoice": "TX3LPaxmHKxFdv7VOQHJ"
     }
   ]
 }
