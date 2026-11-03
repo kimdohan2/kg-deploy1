@@ -72,12 +72,20 @@ function mergeYaml(path, values) {
 // 음성에서 이 봇을 부르는 이름들 (Rou는 "루"로 불림)
 const callNames = b => [...new Set([b.name, b.speakName])];
 
+// eleven_v3·v4 목소리는 대괄호 감정 표시를 소리로 낸다 ([laughs] → 실제 웃음). 그 모델일 때만 봇에게 알려준다.
+const usesV3 = ttsProvider === 'elevenlabs' && /_v[34]\b/.test(characters.tts?.elevenlabsModel || '');
+const VOICE_TAGS = `- 네 대사는 감정까지 소리로 나와. 대사 앞이나 중간에 대괄호 감정 표시를 하나 넣을 수 있어:
+  [laughs] 웃음, [giggles] 킥킥, [sighs] 한숨, [gasps] 헉, [excited] 신남, [whispers] 속삭임, [sarcastic] 비꼬듯, [frustrated] 짜증
+  예: "[laughs] 루 너 또 떨어졌어?", "[sighs] ...또 졌네."
+- 감정 표시는 한 대사에 하나까지, 꼭 어울릴 때만. 이 표시만 영어로 쓰고 대사는 한국어로.`;
+
 function render(text, self) {
   return text
     .replaceAll('{{coco}}', names.coco)
     .replaceAll('{{lovey}}', names.lovey)
     .replaceAll('{{rou}}', names.rou)
     .replaceAll('{{player}}', characters.player?.callName || '사람 친구')
+    .replaceAll('{{voiceTags}}\n', usesV3 ? `${VOICE_TAGS}\n` : '')
     .replaceAll('{{self}}', self);
 }
 
@@ -132,6 +140,8 @@ for (const bot of characters.bots) {
     TUDAK_JUDGE_URL: `http://127.0.0.1:${Number(env.GAME_PORT || 3300) + 1}/voice-listener`,
     // 음성방에서 말하기 전에 게임 서버에서 차례를 받는다 → 글은 먼저 올리고 목소리는 한 명씩 (patch-hermes.js)
     TUDAK_FLOOR_URL: `http://127.0.0.1:${Number(env.GAME_PORT || 3300) + 1}/floor`,
+    // 사건 순간의 즉시 감탄사를 게임 서버에서 받아 바로 튼다 (npm run clips로 만든 소리, patch-hermes.js)
+    TUDAK_CLIP_URL: `http://127.0.0.1:${Number(env.GAME_PORT || 3300) + 1}/clips`,
     // 내가 음성방(voiceChannel)에 들어가면 따라 들어오고, 나가면 같이 나간다 (patch-hermes.js)
     TUDAK_FOLLOW_USER: env.DISCORD_OWNER_ID,
     TUDAK_FOLLOW_VOICE: characters.voiceChannel || '',
@@ -149,6 +159,11 @@ for (const bot of characters.bots) {
     'tts.edge.voice': bot.voice,
     'tts.edge.speed': bot.speed,
     'stt.language': 'ko',
+    // 내 목소리 알아듣기: ElevenLabs Scribe (characters.json의 stt), 아니면 Hermes 기본(내 컴퓨터의 작은 Whisper)
+    ...(characters.stt?.provider === 'elevenlabs' && elevenKey
+      ? { 'stt.provider': 'elevenlabs', 'stt.elevenlabs.model_id': characters.stt.elevenlabsModel || 'scribe_v2',
+          'stt.elevenlabs.language_code': 'kor' }
+      : { 'stt.provider': 'local' }),
     'discord.require_mention': true,
     'discord.auto_thread': false,
     'discord.reactions': false,

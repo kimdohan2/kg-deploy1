@@ -18,14 +18,18 @@ export class VoiceFloor extends EventEmitter {
   get speaking() { return this.holder?.bot ?? null; }
   get waiting() { return this.queue.length; }
 
-  acquire(bot) {
+  // priority: 즉시 감탄사는 줄 맨 앞에 선다 (말하는 사람을 끊지는 않음). waitMaxMs: 이 말만 따로 정한 대기 한도
+  acquire(bot, { priority = false, waitMaxMs = this.waitMaxMs } = {}) {
     return new Promise(resolve => {
-      const item = { bot, resolve };
+      const item = { bot, resolve, priority };
       item.timer = setTimeout(() => {
         this.queue = this.queue.filter(q => q !== item);
         resolve(false);
-      }, this.waitMaxMs);
-      this.queue.push(item);
+      }, waitMaxMs);
+      // 감탄사끼리는 먼저 온 순서대로, 일반 대사보다는 앞에
+      const at = priority ? this.queue.findIndex(q => !q.priority) : -1;
+      if (at >= 0) this.queue.splice(at, 0, item);
+      else this.queue.push(item);
       this.next();
     });
   }
@@ -51,6 +55,6 @@ export class VoiceFloor extends EventEmitter {
     clearTimeout(item.timer);
     this.holder = { bot: item.bot, at: now };
     item.resolve(true);
-    this.emit('speak', item.bot);
+    this.emit('speak', item.bot, item.priority);   // priority = 감탄사
   }
 }

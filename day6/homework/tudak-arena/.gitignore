@@ -3,3 +3,5 @@ node_modules/
 # 노트북마다 따로 설치하는 Hermes 코드와 봇 데이터
 hermes-agent/
 hermes-home/
+# 봇 목소리로 미리 만든 감탄사 (npm run clips로 노트북마다 만듦)
+clips/

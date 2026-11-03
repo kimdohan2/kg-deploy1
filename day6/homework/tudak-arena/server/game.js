@@ -258,6 +258,7 @@ export class Game extends EventEmitter {
 
   snapshot() {
     return {
+      mode: 'tudak',
       phase: this.phase,
       round: this.round,
       t: this.t,

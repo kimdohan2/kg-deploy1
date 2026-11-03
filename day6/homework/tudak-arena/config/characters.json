@@ -1,6 +1,7 @@
 {
   "model": "claude-haiku-5-5",
-  "tts": { "provider": "elevenlabs", "elevenlabsModel": "eleven_flash_v2_5" },
+  "tts": { "provider": "elevenlabs", "elevenlabsModel": "eleven_v4" },
+  "stt": { "provider": "elevenlabs", "elevenlabsModel": "scribe_v2" },
   "player": { "color": "#7CE07C", "callName": "도도" },
   "voiceDefault": "coco",
   "voiceChannel": "투닥-아레나",
@@ -16,7 +17,7 @@
       "apiPort": 8651,
       "voice": "ko-KR-SunHiNeural",
       "speed": 1.15,
-      "elevenlabsVoice": "cgSgspJ2msm6clMCkdW9"
+      "elevenlabsVoice": "8jHHF8rMqMlg8if2mOUe"
     },
     {
       "id": "lovey",
@@ -29,7 +30,7 @@
       "apiPort": 8652,
       "voice": "ko-KR-InJoonNeural",
       "speed": 0.9,
-      "elevenlabsVoice": "bIHbv24MWmeRgasZH58o"
+      "elevenlabsVoice": "Ir7oQcBXWiq4oFGROCfj"
     },
     {
       "id": "rou",
@@ -42,7 +43,7 @@
       "apiPort": 8653,
       "voice": "ko-KR-HyunsuMultilingualNeural",
       "speed": 1.2,
-      "elevenlabsVoice": "TX3LPaxmHKxFdv7VOQHJ"
+      "elevenlabsVoice": "LKOcTG4J4tYTPR9DnLeM"
     }
   ]
 }

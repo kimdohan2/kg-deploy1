@@ -21,6 +21,7 @@ html, body {
 }
 
 canvas {
+  touch-action: none;
   position: fixed;
   inset: 0;
   width: 100%;
@@ -143,6 +144,24 @@ canvas {
 }
 .card h1 { margin: 0 0 8px; font-size: 44px; color: var(--accent); font-weight: normal; text-shadow: 0 3px 0 #7a4b00; }
 .sub { margin: 0 0 18px; color: var(--muted); line-height: 1.5; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.mode {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: #12162a;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.mode b { font-weight: normal; font-size: 20px; }
+.mode span { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.mode.selected { border-color: var(--accent); background: rgba(255, 207, 74, 0.1); }
+.mode.selected b { color: var(--accent); }
+.turn-pill { color: var(--accent); }
 .faces { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
 .faces img { width: 72px; height: 72px; border-radius: 50%; image-rendering: pixelated; }
 .name { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 16px; font-size: 18px; }

@@ -21,8 +21,9 @@ function idFromToken(token) {
 }
 
 export class Referee {
-  constructor({ game, bots, player, cfg, env, io, voice }) {
+  constructor({ game, bots, player, cfg, env, io, voice, clips }) {
     this.game = game;
+    this.clips = clips;           // 즉시 감탄사 (clips.js)
     this.callName = player?.callName || '사람 친구';   // 봇들이 사람 플레이어를 부르는 이름
     this.voice = voice;           // 음성방 말하는 차례 (floor.js)
     this.bots = bots;
@@ -45,7 +46,7 @@ export class Referee {
     this.log = [];                // 최근 대화 (Jev 판단에 흐름으로 넘긴다)
     this.bubbles = new Map();     // botId -> 목소리가 나오면 웹에 띄울 말풍선
     // 웹 말풍선은 그 봇의 목소리가 나오기 시작할 때 띄운다 (글이 목소리보다 먼저 올라오므로)
-    voice?.on('speak', id => this.showBubble(id));
+    voice?.on('speak', (id, isClip) => { if (!isClip) this.showBubble(id); });
     this.judge = new Judge({ env, bots });
     console.log(`[심판] Jev 판단: ${this.judge.enabled ? '켜짐' : '꺼짐 (TYPESAFE_API_KEY 없음 → 규칙대로)'}`);
     this.resetStats();
@@ -56,6 +57,30 @@ export class Referee {
     game.on('event', ev => this.onGameEvent(ev));
     setInterval(() => this.idleCheck(), 5000);
     setInterval(() => this.pump(), 300);
+  }
+
+  // 사건 순간의 즉시 감탄사: 미리 만든 짧은 소리라 Claude를 거치지 않고 바로 나온다.
+  // 상황에 맞는 긴 말(수다)은 아래 묶음 처리(flush → react)로 따로, 조금 뒤에 나온다.
+  // 그 봇의 kind 감탄사를 확률 p로 낸다 (봇이 아니거나 감탄사가 없으면 아무 일 없음). 알까기도 쓴다.
+  playClip(id, kind, p = 1) {
+    if (!this.clips || !this.bots.some(b => b.id === id) || Math.random() >= p) return;
+    const text = this.clips.play(id, kind);
+    if (text) this.io.emit('say', { id, text });
+  }
+
+  instantClip(ev) {
+    if (!this.clips) return;
+    const isBot = id => this.bots.some(b => b.id === id);
+    const say = (id, kind, p) => this.playClip(id, kind, p);
+    if (ev.type === 'out') {
+      say(ev.victim, ev.pusher ? 'out' : 'oops');
+      if (ev.pusher) say(ev.pusher, 'gotcha', 0.6);
+    } else if (ev.type === 'hard_hit') {
+      say(ev.victim, 'hit', 0.5);
+    } else if (ev.type === 'win') {
+      if (isBot(ev.winner)) say(ev.winner, 'win');
+      else say(pick(this.bots).id, 'lose');
+    }
   }
 
   resetStats() {
@@ -133,6 +158,7 @@ export class Referee {
   // ---------- 게임 사건 ----------
 
   onGameEvent(ev) {
+    this.instantClip(ev);
     if (ev.type === 'round_start') { this.roundLog = []; return; }
     if (ev.type === 'out') {
       this.roundLog.push(ev);
@@ -358,7 +384,8 @@ export class Referee {
     }
     // 봇이 시작 화면 이름으로 부르면 호칭으로 바꿔서 전한다 (다른 친구에게 옮지 않게)
     const typed = this.game.human.name;
-    let line = msg.content.replace(/<@!?\d+>/g, '').trim();
+    // [laughs] 같은 목소리 감정 표시는 소리로만 나오고 글에서는 뺀다
+    let line = msg.content.replace(/<@!?\d+>/g, '').replace(/\[[a-z][a-z ]{0,20}\]\s*/gi, '').trim();
     if (typed && typed !== this.callName) line = line.split(typed).join(this.callName);
     if (!line) return;
     // 음성방 들어감·나감 같은 안내 문구는 대답이 아니다

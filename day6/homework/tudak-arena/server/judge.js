@@ -54,6 +54,19 @@ export class Judge {
     return a?.listener?.choice ?? null;
   }
 
+  // 알까기: 지금 누가 훈수를 두거나 한마디 거들까 (ids 중에서). 실패하면 null.
+  async adviser(situation, ids) {
+    const a = await this.ask({ situation, friends: this.friends(ids) }, {
+      adviser: {
+        type: 'choice',
+        instructions: '친구들이 알까기를 하고 있어요. `situation`을 보면 `friends` 중 누가 지금 훈수를 두거나 한마디 거들 것 같나요? '
+          + '성격과 상황(누가 당했는지, 누가 앞서가는지, 누구 돌이 노려질 만한지)을 보고 고르세요.',
+        criteria: this.friends(ids),
+      },
+    });
+    return a?.adviser?.choice ?? null;
+  }
+
   // speaker가 line이라고 했을 때: 받아칠 확률(0~1)과 받아칠 친구. 실패하면 null.
   async retort(speaker, line, recent) {
     const others = this.bots.map(b => b.id).filter(id => id !== speaker);

@@ -111,6 +111,8 @@ const PATCHES = [
                 _tv.add_done_callback(_tvs.discard)
             else:
                 await self._send_voice_reply(event, response)
+            ${MARK}: [laughs] 같은 감정 표시는 목소리에만 쓰고 채팅 글에서는 뺀다
+            response = __import__("re").sub(r"\\[[a-zA-Z][a-zA-Z ]{0,20}\\]\\s*", "", response).strip() or response
 `,
   },
   {
@@ -157,6 +159,58 @@ const PATCHES = [
     after: 'def prepare_spoken_text(',
     find: '    spoken = text\n',
     replace: `    spoken = text.replace("~", "").replace("～", "")  ${MARK}: English voices read "~" as "about"
+`,
+  },
+  {
+    // 즉시 감탄사: 음성방에 들어가면 게임 서버(TUDAK_CLIP_URL)에 "내 감탄사 있어?"를 계속 물어보고,
+    // 받으면 Claude를 거치지 않고 미리 만든 소리 파일을 말하는 차례 맨 앞에서 바로 튼다.
+    name: '즉시 감탄사 받아서 바로 틀기',
+    file: 'plugins/platforms/discord/adapter.py',
+    after: 'async def join_voice_channel(',
+    find: '            vc = await channel.connect()\n            self._voice_clients[guild_id] = vc\n',
+    replace: `            vc = await channel.connect()
+            self._voice_clients[guild_id] = vc
+            if __import__("os").getenv("TUDAK_CLIP_URL") and not getattr(self, "_tudak_clip_task", None):
+                ${MARK}: instant clips pushed by the game server, played ahead of the queued lines
+                async def _tudak_clip_loop(adapter=self):
+                    import os as _o, json as _j, urllib.request as _u
+                    clip_url, floor_url, me = (_o.getenv(k, "") for k in ("TUDAK_CLIP_URL", "TUDAK_FLOOR_URL", "TUDAK_VOICE_ID"))
+
+                    def _post(url, body, timeout):
+                        rq = _u.Request(url, data=_j.dumps(body).encode(), headers={"Content-Type": "application/json"})
+                        with _u.urlopen(rq, timeout=timeout) as r:
+                            return _j.load(r)
+
+                    while True:
+                        try:
+                            got = await asyncio.to_thread(_post, f"{clip_url}/next", {"bot": me}, 30)
+                        except Exception:
+                            await asyncio.sleep(3)
+                            continue
+                        path, gid = got.get("clip"), next(iter(adapter._voice_clients), None)
+                        if not path or gid is None or not _o.path.exists(path):
+                            continue
+                        granted = None
+                        if floor_url:
+                            try:
+                                granted = (await asyncio.to_thread(
+                                    _post, f"{floor_url}/acquire", {"bot": me, "priority": True, "waitMs": 2500}, 5)).get("granted")
+                            except Exception:
+                                granted = None
+                        if granted is False:
+                            continue
+                        try:
+                            await getattr(adapter, "_tudak_play_in_voice_channel", adapter.play_in_voice_channel)(gid, path)
+                        except Exception as _e:
+                            logger.warning("Instant clip failed: %s", _e)
+                        finally:
+                            if granted:
+                                try:
+                                    await asyncio.to_thread(_post, f"{floor_url}/release", {"bot": me}, 5)
+                                except Exception:
+                                    pass
+
+                self._tudak_clip_task = asyncio.ensure_future(_tudak_clip_loop())
 `,
   },
 ];
