@@ -1,0 +1,1367 @@
+{
+  "songs": [
+    {
+      "id": "coco-1",
+      "customers": [
+        "coco"
+      ],
+      "genre": "하이퍼 트랩",
+      "level": "보통",
+      "order": [
+        {
+          "item": "cheese",
+          "qty": 1
+        },
+        {
+          "item": "fries",
+          "qty": 1
+        },
+        {
+          "item": "cola",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "coco",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "coco",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Excuse me, 주문할게요 real quick",
+            "치즈버거 하나, 감튀도 하나요",
+            "콜라 한 잔, 얼음 많이",
+            "Yeah, that's it, that's all"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "치즈버거, 감튀, 콜라 one each",
+            "For here, thank you"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coco-2",
+      "customers": [
+        "coco"
+      ],
+      "genre": "하이퍼 트랩",
+      "level": "보통",
+      "order": [
+        {
+          "item": "chicken",
+          "qty": 2
+        },
+        {
+          "item": "shake",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "coco",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "coco",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Ayy, 오늘은 매운 게 당겨",
+            "매콤 치킨버거 두 개 주세요",
+            "딸기 쉐이크 하나로 마무리",
+            "Spicy and sweet, I like it like that"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "치킨버거 둘, 쉐이크 하나",
+            "Real quick, 부탁해요"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coco-3",
+      "customers": [
+        "coco"
+      ],
+      "genre": "하이퍼 트랩",
+      "level": "보통",
+      "order": [
+        {
+          "item": "bulgogi",
+          "qty": 1
+        },
+        {
+          "item": "nugget",
+          "qty": 1
+        },
+        {
+          "item": "mtn",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "coco",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "coco",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Hi, 메뉴판 보니까 고민되네",
+            "더블 불고기버거 하나 할게요",
+            "너겟 하나 추가, 마운틴두 한 잔",
+            "Okay, I'm good, 그걸로 할게요"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "불고기버거, 너겟, 마운틴두",
+            "One, one, one, let's go"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coco-4",
+      "customers": [
+        "coco"
+      ],
+      "genre": "하이퍼 트랩",
+      "level": "보통",
+      "order": [
+        {
+          "item": "shrimp",
+          "qty": 1
+        },
+        {
+          "item": "onion",
+          "qty": 2
+        },
+        {
+          "item": "lemon",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "coco",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "coco",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Yo, 줄 짧을 때 빨리 시킬게요",
+            "통새우버거 하나 주세요",
+            "어니언링은 두 개, extra crispy",
+            "레몬에이드 하나, that's my order"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "새우버거 하나, 어니언링 둘",
+            "레몬에이드 하나, thank you"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coco-5",
+      "customers": [
+        "coco"
+      ],
+      "genre": "하이퍼 트랩",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "cheese",
+          "qty": 3
+        },
+        {
+          "item": "cheesestick",
+          "qty": 1
+        },
+        {
+          "item": "mtn",
+          "qty": 1
+        }
+      ],
+      "decoys": [
+        "cola"
+      ],
+      "parts": [
+        {
+          "who": "coco",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "coco",
+          "part": "Verse",
+          "ms": 11000,
+          "lines": [
+            "Hold up, 주문 좀 할게요",
+            "치즈버거 두 개, 아니 make it three",
+            "Cheese stick 하나 on the side",
+            "마실 건 콜라… nah, scratch that",
+            "마운틴두로 바꿔 주세요"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "Did you get that? 두 번은 안 해요",
+            "Ring it up, ring it up"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coco-6",
+      "customers": [
+        "coco"
+      ],
+      "genre": "하이퍼 트랩",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "bacon",
+          "qty": 1
+        },
+        {
+          "item": "bulgogi",
+          "qty": 2
+        },
+        {
+          "item": "onion",
+          "qty": 1
+        },
+        {
+          "item": "shake",
+          "qty": 2
+        }
+      ],
+      "decoys": [
+        "fries"
+      ],
+      "parts": [
+        {
+          "who": "coco",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "coco",
+          "part": "Verse",
+          "ms": 11000,
+          "lines": [
+            "배고파서 손이 떨려, no joke",
+            "Bacon tower 하나, 불고기버거 두 개",
+            "감튀 말고 onion ring 하나",
+            "딸기 쉐이크는 two, 빨대도 두 개",
+            "Yeah, 이게 오늘 내 order"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "Stack it up, stack it up",
+            "Don't mess it up, 부탁해요"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lovey-1",
+      "customers": [
+        "lovey"
+      ],
+      "genre": "트랩",
+      "level": "보통",
+      "order": [
+        {
+          "item": "bulgogi",
+          "qty": 1
+        },
+        {
+          "item": "cheesestick",
+          "qty": 1
+        },
+        {
+          "item": "cider",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Yeah, 오늘도 늦은 점심",
+            "더블 불고기버거 하나 주세요",
+            "치즈스틱 하나 on the side",
+            "사이다 한 잔, keep it simple"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "불고기버거, 치즈스틱, 사이다",
+            "One each, that's it"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lovey-2",
+      "customers": [
+        "lovey"
+      ],
+      "genre": "트랩",
+      "level": "보통",
+      "order": [
+        {
+          "item": "bacon",
+          "qty": 1
+        },
+        {
+          "item": "flurry",
+          "qty": 1
+        },
+        {
+          "item": "lemon",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Uh, 바쁜 하루 끝, 혼자 왔어요",
+            "베이컨 타워버거 하나 할게요",
+            "디저트는 넥플러리 하나",
+            "레몬에이드로 마무리, too easy"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "타워버거, 플러리, 레몬에이드",
+            "Take your time, 근데 빨리"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lovey-3",
+      "customers": [
+        "lovey"
+      ],
+      "genre": "트랩",
+      "level": "보통",
+      "order": [
+        {
+          "item": "shrimp",
+          "qty": 2
+        },
+        {
+          "item": "fries",
+          "qty": 1
+        },
+        {
+          "item": "cola",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Check it, 친구 거까지 시킬게",
+            "통새우버거 두 개 주세요",
+            "감자튀김 하나, extra salt",
+            "콜라 한 잔이면 돼, yeah"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "새우버거 둘, 감자튀김 하나",
+            "콜라 하나, let's go"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lovey-4",
+      "customers": [
+        "lovey"
+      ],
+      "genre": "트랩",
+      "level": "보통",
+      "order": [
+        {
+          "item": "cheese",
+          "qty": 1
+        },
+        {
+          "item": "nugget",
+          "qty": 2
+        },
+        {
+          "item": "mtn",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Yeah, 여기 단골인 거 알죠?",
+            "치즈버거 하나, 늘 먹던 걸로",
+            "너겟은 두 개, 소스 많이",
+            "마운틴두 한 잔, ice cold"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "치즈버거 하나, 너겟 둘",
+            "마운틴두 하나, that's it"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lovey-5",
+      "customers": [
+        "lovey"
+      ],
+      "genre": "트랩",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "chicken",
+          "qty": 1
+        },
+        {
+          "item": "nugget",
+          "qty": 3
+        },
+        {
+          "item": "lemon",
+          "qty": 1
+        }
+      ],
+      "decoys": [
+        "cider"
+      ],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse",
+          "ms": 11000,
+          "lines": [
+            "Listen, 한 번만 말할게요",
+            "Spicy chicken 버거 하나",
+            "Nuggets 두 개, 아니 하나 더",
+            "사이다는 pass, lemonade 하나",
+            "Got it? 그럼 ring it up"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "No cap, 이게 내 order",
+            "한 번에 맞히면 respect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lovey-6",
+      "customers": [
+        "lovey"
+      ],
+      "genre": "트랩",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "shrimp",
+          "qty": 1
+        },
+        {
+          "item": "chicken",
+          "qty": 1
+        },
+        {
+          "item": "flurry",
+          "qty": 2
+        },
+        {
+          "item": "cider",
+          "qty": 1
+        }
+      ],
+      "decoys": [
+        "shake"
+      ],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse",
+          "ms": 11000,
+          "lines": [
+            "Uh, 오늘은 좀 많이 시킬게",
+            "Shrimp burger 하나, 치킨버거 하나",
+            "넥플러리는 two, 하나는 친구 거",
+            "쉐이크? Nah, 사이다 한 잔",
+            "That's the order, 받아 적어"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "I don't repeat myself, 알죠?",
+            "틀리면 다음은 없어"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rou-1",
+      "customers": [
+        "rou"
+      ],
+      "genre": "붐뱁",
+      "level": "보통",
+      "order": [
+        {
+          "item": "bulgogi",
+          "qty": 1
+        },
+        {
+          "item": "onion",
+          "qty": 1
+        },
+        {
+          "item": "cola",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "rou",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "rou",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "오후 세 시, 배가 좀 고프네요",
+            "더블 불고기버거 하나, 어니언링 하나",
+            "콜라 한 잔 부탁해요, yeah"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "불고기버거, 어니언링, 콜라",
+            "No rush, take your time"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rou-2",
+      "customers": [
+        "rou"
+      ],
+      "genre": "붐뱁",
+      "level": "보통",
+      "order": [
+        {
+          "item": "chicken",
+          "qty": 1
+        },
+        {
+          "item": "cheesestick",
+          "qty": 1
+        },
+        {
+          "item": "shake",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "rou",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "rou",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Yo, 비 오는 날엔 버거죠",
+            "매콤 치킨버거 하나, 치즈스틱 하나",
+            "딸기 쉐이크 하나 주세요"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "치킨버거, 치즈스틱, 쉐이크",
+            "One each, 천천히요"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rou-3",
+      "customers": [
+        "rou"
+      ],
+      "genre": "붐뱁",
+      "level": "보통",
+      "order": [
+        {
+          "item": "bacon",
+          "qty": 2
+        },
+        {
+          "item": "cider",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "rou",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "rou",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Uh, 퇴근길에 잠깐 들렀어요",
+            "베이컨 타워버거 두 개 포장이요",
+            "사이다 하나도 같이, yeah"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "타워버거 둘, 사이다 하나",
+            "To go, thank you"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rou-4",
+      "customers": [
+        "rou"
+      ],
+      "genre": "붐뱁",
+      "level": "보통",
+      "order": [
+        {
+          "item": "cheese",
+          "qty": 1
+        },
+        {
+          "item": "flurry",
+          "qty": 1
+        },
+        {
+          "item": "lemon",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "rou",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "rou",
+          "part": "Verse",
+          "ms": 8000,
+          "lines": [
+            "Easy, 오늘은 가볍게 갈게요",
+            "치즈버거 하나, 넥플러리 하나",
+            "레몬에이드 하나면 돼요"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "치즈버거, 플러리, 레몬에이드",
+            "That's all, 고마워요"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rou-5",
+      "customers": [
+        "rou"
+      ],
+      "genre": "붐뱁",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "bacon",
+          "qty": 2
+        },
+        {
+          "item": "fries",
+          "qty": 1
+        },
+        {
+          "item": "lemon",
+          "qty": 1
+        }
+      ],
+      "decoys": [
+        "cola"
+      ],
+      "parts": [
+        {
+          "who": "rou",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "rou",
+          "part": "Verse",
+          "ms": 11000,
+          "lines": [
+            "잠깐만요, 주문 다시 할게요",
+            "Bacon tower 하나… wait, 두 개로",
+            "Fries 하나, 콜라는 빼 주세요",
+            "대신 lemonade, 그게 다예요"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "Run it back, 잘 들었죠?",
+            "Timing is everything"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rou-6",
+      "customers": [
+        "rou"
+      ],
+      "genre": "붐뱁",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "shrimp",
+          "qty": 2
+        },
+        {
+          "item": "nugget",
+          "qty": 1
+        },
+        {
+          "item": "onion",
+          "qty": 1
+        },
+        {
+          "item": "mtn",
+          "qty": 2
+        }
+      ],
+      "decoys": [
+        "cider"
+      ],
+      "parts": [
+        {
+          "who": "rou",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "rou",
+          "part": "Verse",
+          "ms": 11000,
+          "lines": [
+            "Yo, 친구 몫까지 시킬게요",
+            "새우버거 하나, 같은 걸로 하나 더",
+            "Nuggets 하나, onion ring 하나",
+            "사이다 말고 마운틴두 두 잔"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "Same thing twice, 헷갈리지 마요",
+            "Ring it up, I'm out"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duo-1",
+      "customers": [
+        "coco",
+        "rou"
+      ],
+      "genre": "하이퍼 + 붐뱁",
+      "level": "보통",
+      "order": [
+        {
+          "item": "cheese",
+          "qty": 1
+        },
+        {
+          "item": "cola",
+          "qty": 1
+        },
+        {
+          "item": "shrimp",
+          "qty": 1
+        },
+        {
+          "item": "cider",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "coco",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "coco",
+          "part": "Verse 1",
+          "ms": 5000,
+          "lines": [
+            "제가 먼저 할게요, 치즈버거 하나",
+            "콜라 하나, that's mine"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Verse 2",
+          "ms": 5000,
+          "lines": [
+            "Uh, 저는 통새우버거 하나",
+            "사이다 하나요, easy"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "Two burgers, two drinks",
+            "따로따로, thank you"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duo-2",
+      "customers": [
+        "lovey",
+        "coco"
+      ],
+      "genre": "드릴 배틀",
+      "level": "보통",
+      "order": [
+        {
+          "item": "bulgogi",
+          "qty": 1
+        },
+        {
+          "item": "cider",
+          "qty": 1
+        },
+        {
+          "item": "chicken",
+          "qty": 1
+        },
+        {
+          "item": "shake",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse 1",
+          "ms": 5000,
+          "lines": [
+            "Yeah, 내가 먼저, 불고기버거 하나",
+            "사이다 한 잔, keep it clean"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Verse 2",
+          "ms": 5000,
+          "lines": [
+            "Excuse me, 매콤 치킨버거 하나",
+            "딸기 쉐이크 하나 주세요"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Hook",
+          "ms": 4000,
+          "lines": [
+            "Separate orders, 알죠?",
+            "Write it down, let's go"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duo-3",
+      "customers": [
+        "lovey",
+        "coco"
+      ],
+      "genre": "드릴 배틀",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "cheese",
+          "qty": 2
+        },
+        {
+          "item": "fries",
+          "qty": 1
+        },
+        {
+          "item": "cola",
+          "qty": 1
+        },
+        {
+          "item": "mtn",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse 1",
+          "ms": 6000,
+          "lines": [
+            "Yeah, 치즈버거 하나 주세요",
+            "Fries 하나, 콜라 한 잔",
+            "That's me, 깔끔하게"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Verse 2",
+          "ms": 6000,
+          "lines": [
+            "Me too, 저도 치즈버거",
+            "근데 저는 콜라 말고 마운틴두",
+            "쟤 거는 그대로 두세요"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "Two of us, 다 합쳐서",
+            "Ring it up, don't miss"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duo-4",
+      "customers": [
+        "rou",
+        "coco"
+      ],
+      "genre": "붐뱁 + 하이퍼",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "bacon",
+          "qty": 2
+        },
+        {
+          "item": "onion",
+          "qty": 1
+        },
+        {
+          "item": "lemon",
+          "qty": 1
+        },
+        {
+          "item": "nugget",
+          "qty": 2
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "rou",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "rou",
+          "part": "Verse 1",
+          "ms": 6000,
+          "lines": [
+            "Bacon tower 하나 할게요",
+            "어니언링 하나, 레몬에이드 하나"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Verse 2",
+          "ms": 6000,
+          "lines": [
+            "그거 맛있어요? 저도 같은 버거로",
+            "Nuggets는 두 개",
+            "음료는 됐어요, I'm good"
+          ]
+        },
+        {
+          "who": "coco",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "버거 몇 개? Count it up",
+            "Don't mess it up"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duo-5",
+      "customers": [
+        "lovey",
+        "rou"
+      ],
+      "genre": "트랩",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "bulgogi",
+          "qty": 1
+        },
+        {
+          "item": "mtn",
+          "qty": 1
+        },
+        {
+          "item": "chicken",
+          "qty": 1
+        },
+        {
+          "item": "flurry",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "lovey",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "lovey",
+          "part": "Verse 1",
+          "ms": 6000,
+          "lines": [
+            "Yo, 불고기버거 두 개 주세요",
+            "마운틴두 하나, ice cold",
+            "다 먹을 수 있어, trust me"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Verse 2",
+          "ms": 6000,
+          "lines": [
+            "Nah, 불고기버거 하나는 빼 주세요",
+            "대신 spicy chicken 하나, 플러리 하나"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "Okay, fine, 네 말대로",
+            "Final answer, ring it up"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duo-6",
+      "customers": [
+        "rou",
+        "lovey"
+      ],
+      "genre": "트랩",
+      "level": "어려움",
+      "order": [
+        {
+          "item": "shrimp",
+          "qty": 2
+        },
+        {
+          "item": "cheesestick",
+          "qty": 2
+        },
+        {
+          "item": "shake",
+          "qty": 1
+        },
+        {
+          "item": "cola",
+          "qty": 1
+        }
+      ],
+      "decoys": [],
+      "parts": [
+        {
+          "who": "rou",
+          "part": "Intro",
+          "ms": 3000,
+          "lines": []
+        },
+        {
+          "who": "rou",
+          "part": "Verse 1",
+          "ms": 6000,
+          "lines": [
+            "통새우버거 하나, 치즈스틱 하나",
+            "딸기 쉐이크 하나 주세요"
+          ]
+        },
+        {
+          "who": "lovey",
+          "part": "Verse 2",
+          "ms": 6000,
+          "lines": [
+            "Same for me, copy that",
+            "근데 쉐이크 말고 coke 하나",
+            "That's it, let's go"
+          ]
+        },
+        {
+          "who": "rou",
+          "part": "Hook",
+          "ms": 5000,
+          "lines": [
+            "Same thing, one difference",
+            "Check it twice, 부탁해요"
+          ]
+        }
+      ]
+    }
+  ],
+  "genreStyles": {
+    "coco": {
+      "name": "하이퍼 트랩",
+      "beat": [
+        "hyperpop trap",
+        "155 bpm",
+        "glitchy synths"
+      ],
+      "voice": [
+        "young female rapper",
+        "Korean rap mixed with English phrases",
+        "playful hyper energetic flow",
+        "very clear diction, every word easy to understand"
+      ]
+    },
+    "lovey": {
+      "name": "트랩",
+      "beat": [
+        "trap",
+        "140 bpm",
+        "dark synth bells",
+        "heavy 808"
+      ],
+      "voice": [
+        "young male rapper",
+        "Korean rap mixed with English phrases",
+        "cocky swagger flow",
+        "very clear diction, every word easy to understand"
+      ]
+    },
+    "rou": {
+      "name": "붐뱁",
+      "beat": [
+        "boom bap",
+        "90 bpm",
+        "dusty jazz piano",
+        "vinyl crackle"
+      ],
+      "voice": [
+        "young male rapper",
+        "Korean rap mixed with English phrases",
+        "laid-back cool flow",
+        "very clear diction, every word easy to understand"
+      ]
+    }
+  }
+}

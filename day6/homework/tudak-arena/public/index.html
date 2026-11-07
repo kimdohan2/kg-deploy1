@@ -28,13 +28,31 @@
     <div class="cd" id="cd" title="돌진 준비"><div id="cdbar"></div></div>
   </footer>
 
+  <aside id="recipes" class="recipes" hidden></aside>
+
+  <section id="cafe" class="cafe" hidden>
+    <div class="cup-row">
+      <div id="cup" class="cup"></div>
+      <button id="trash" type="button" class="cbtn">비우기 <span>⌫</span></button>
+      <button id="serve" type="button" class="cbtn serve">내기 <span>Enter</span></button>
+    </div>
+    <div id="ings" class="ings"></div>
+  </section>
+
   <div id="start" class="overlay">
     <div class="card">
       <h1>투닥 아레나</h1>
       <p class="sub">코코, 러비, Rou와 한 판! 무슨 게임 할래?</p>
+      <a class="feature" href="burger/">
+        <img src="burger/img/menu/cheese.jpg" alt="">
+        <span><b>Show me the burger</b><small>대표 게임 · 손님이 랩으로 주문하면 들으면서 포스기로 찍기</small></span>
+        <em>시작 ▶</em>
+      </a>
+      <p class="others">다른 게임</p>
       <div class="modes">
         <button type="button" class="mode" data-mode="tudak"><b>밀치기</b><span>실시간으로 부딪혀 밀어내기.<br>경기장이 점점 좁아져요.</span></button>
         <button type="button" class="mode" data-mode="alkkagi"><b>알까기</b><span>차례대로 돌을 튕겨 날리기.<br>친구들이 훈수를 둬요.</span></button>
+        <button type="button" class="mode" data-mode="cafe"><b>카페</b><span>내가 사장, 친구들이 손님.<br>주문 듣고 음료 만들기.</span></button>
       </div>
       <div class="faces">
         <img src="img/coco.png" alt="코코"><img src="img/lovey.png" alt="러비"><img src="img/rou.png" alt="Rou">
@@ -47,5 +65,6 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="game.js"></script>
+  <script src="cafe.js"></script>
 </body>
 </html>

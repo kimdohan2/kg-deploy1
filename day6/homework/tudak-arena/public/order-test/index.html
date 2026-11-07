@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>주문 랩 시험</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #141826; --panel: #1e2336; --line: rgba(255,255,255,.14); --text: #f4f1ea; --muted: #a9adbd; --accent: #ffcf4a; --hot: #ff5fa2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'Jua', system-ui, sans-serif;
+      display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px; }
+    h1 { margin: 0; font-weight: normal; color: var(--accent); font-size: 24px; }
+    .stage { position: relative; width: min(1100px, 100%); }
+    canvas { width: 100%; aspect-ratio: 3 / 2; display: block; border-radius: 14px; border: 1px solid var(--line); background: #000; }
+    .sub { position: absolute; left: 50%; bottom: 5%; transform: translateX(-50%); max-width: 90%; padding: 8px 16px; border-radius: 12px;
+      background: rgba(10, 12, 20, .78); font-size: clamp(16px, 2.4vw, 26px); text-align: center; }
+    .sub:empty { display: none; }
+    .bubble { position: absolute; left: 60%; top: 6%; max-width: 36%; padding: 10px 16px; border-radius: 16px 16px 16px 4px;
+      background: #fff4dc; color: #2a2230; font-size: clamp(15px, 2vw, 22px); box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+    .bubble:empty { display: none; }
+    .note { color: var(--muted); font-size: 15px; text-align: center; margin: 0; min-height: 1.4em; }
+    .bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    button { font: inherit; font-size: 18px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+    button.main { background: var(--accent); color: #3b2600; border: 0; }
+    button.on { border-color: var(--accent); color: var(--accent); }
+    .sheet { width: min(1100px, 100%); display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; }
+    .sheet[hidden] { display: none; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+    .card h2 { margin: 0 0 8px; font-weight: normal; font-size: 18px; color: var(--accent); }
+    .row { display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--line); font-size: 20px; }
+    .row b { color: var(--hot); font-weight: normal; }
+    .lyr p { margin: 4px 0; color: var(--muted); }
+    .lyr mark { background: none; color: var(--hot); }
+    .lyr .tag { color: var(--accent); font-size: 14px; margin-top: 10px; }
+    @media (max-width: 720px) { .sheet { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>투닥버거 · 코코 주문 랩 시험</h1>
+  <div class="stage">
+    <canvas id="c" width="1536" height="1024"></canvas>
+    <div id="sub" class="sub"></div>
+    <div id="bubble" class="bubble"></div>
+  </div>
+  <div class="bar">
+    <button id="rap" class="main" type="button">🎤 주문 받기 (랩 틀기)</button>
+    <button id="subs" type="button">가사 자막 끄기</button>
+    <button id="good" type="button">✅ 주문 완료 (맞게 찍기)</button>
+    <button id="bad" type="button">❌ 주문 완료 (틀리게 찍기)</button>
+    <button id="show" type="button">🧾 정답 주문서</button>
+  </div>
+  <p id="note" class="note"></p>
+  <section id="sheet" class="sheet" hidden>
+    <div class="card"><h2>정답 주문서</h2><div id="answer"></div></div>
+    <div class="card lyr"><h2>가사 (메뉴는 분홍색)</h2><div id="lyrics"></div></div>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const cv = document.getElementById('c');
+    const ctx = cv.getContext('2d');
+    const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+    const COUNTER = 750;                        // 계산대 건너편 끝선 (이 아래는 계산대라 코코를 안 그림)
+    const POS = { cx: 760, bottom: 800, s: 0.6 };
+    const MOUTH = { x: 510, y: 463, rx: 92, ry: 64 };
+    const BPM = 155;
+
+    let img = {}, order = null, lines = [], mood = { name: 'base', until: 0, at: 0 };
+    let analyser = null, audio = null, level = 0, slow = 0, mouthOpen = false, mouthSince = 0, subsOn = true;
+    const mouthLayer = document.createElement('canvas');
+    mouthLayer.width = mouthLayer.height = 1024;
+
+    Promise.all([fetch('order.json').then(r => r.json()), ...['bg.jpg', 'coco-base.png', 'coco-mouth.png', 'coco-happy.png', 'coco-angry.png'].map(load)])
+      .then(([o, bg, base, mouth, happy, angry]) => {
+        order = o;
+        img = { bg, base, mouth, happy, angry };
+        buildSheet();
+        const m = mouthLayer.getContext('2d');
+        m.drawImage(mouth, 0, 0);
+        m.globalCompositeOperation = 'destination-in';
+        const k = MOUTH.ry / MOUTH.rx;
+        m.setTransform(1, 0, 0, k, 0, MOUTH.y * (1 - k));
+        const g = m.createRadialGradient(MOUTH.x, MOUTH.y, 5, MOUTH.x, MOUTH.y, MOUTH.rx);
+        g.addColorStop(0, '#000'); g.addColorStop(0.72, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        m.fillStyle = g;
+        m.fillRect(0, 0, 1024, 1024 / k);
+        requestAnimationFrame(draw);
+      });
+
+    // 가사 줄마다 대략 언제 나오는지: 구간 길이를 줄 수로 나눔
+    function buildSheet() {
+      let t = 0;
+      for (const p of order.lyrics) {
+        const each = p.ms / 1000 / Math.max(1, p.lines.length);
+        p.lines.forEach((text, i) => lines.push({ text, from: t + i * each, to: t + (i + 1) * each, part: p.part }));
+        t += p.ms / 1000;
+      }
+      const items = order.order.map(o => o.item);
+      const short = items.map(i => i.split(' ').pop());   // "펑펑 치즈버거" → "치즈버거"도 표시
+      const words = [...new Set([...items, ...short])].sort((a, b) => b.length - a.length);
+      const re = new RegExp(words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+      const hi = s => s.replace(re, w => `<mark>${w}</mark>`);
+      document.getElementById('answer').innerHTML = order.order.map(o => `<div class="row"><span>${o.item}</span><b>${o.qty}개</b></div>`).join('');
+      document.getElementById('lyrics').innerHTML = order.lyrics.filter(p => p.lines.length)
+        .map(p => `<p class="tag">[${p.part}]</p>` + p.lines.map(l => `<p>${hi(l)}</p>`).join('')).join('');
+    }
+
+    function setMood(name, ms) { mood = { name, until: performance.now() + ms, at: performance.now() }; }
+    const vocalTime = s => lines.length && s >= lines[0].from && s <= lines[lines.length - 1].to;
+
+    document.getElementById('rap').onclick = async () => {
+      if (!audio) {
+        audio = new Audio('rap.mp3');
+        const ac = new AudioContext();
+        const src = ac.createMediaElementSource(audio);
+        analyser = ac.createAnalyser();
+        analyser.fftSize = 1024;
+        src.connect(analyser).connect(ac.destination);
+        audio.onended = () => { document.getElementById('sheet').hidden = false; };
+      }
+      if (audio.paused) { audio.currentTime = 0; await audio.play(); } else audio.pause();
+    };
+    document.getElementById('subs').onclick = e => { subsOn = !subsOn; e.target.textContent = subsOn ? '가사 자막 끄기' : '가사 자막 켜기'; };
+    // 주문 완료: 서버가 정답과 비교하고, 손님 봇이 Hermes로 디스코드에서 한마디 한다
+    const socket = typeof io === 'function' ? io() : null;
+    const note = document.getElementById('note');
+    const bubble = document.getElementById('bubble');
+    let discord = 'off', lastOk = null, bubbleTimer = 0;
+    socket?.on('status', s => { discord = s.discord; note.textContent = discord === 'connected' ? '디스코드 연결됨: 주문 완료를 누르면 코코가 음성방에서 한마디 해요.' : '디스코드 꺼짐: 코코 말은 말풍선으로만 나와요.'; });
+    socket?.on('say', ({ id, text }) => {
+      if (id !== order?.customer) return;
+      bubble.textContent = text;
+      if (lastOk !== null) setMood(lastOk ? 'happy' : 'angry', 2200);
+      clearTimeout(bubbleTimer);
+      bubbleTimer = setTimeout(() => { bubble.textContent = ''; }, 7000);
+    });
+    function orderDone(ok) {
+      lastOk = ok;
+      setMood(ok ? 'happy' : 'angry', 2200);
+      // 틀리게 찍기: 첫 메뉴 개수를 하나 틀리고, 마지막 메뉴를 빠뜨림
+      const entered = ok ? order.order : order.order.slice(0, -1).map((o, i) => i ? o : { ...o, qty: o.qty > 1 ? o.qty - 1 : o.qty + 1 });
+      if (!socket) { note.textContent = '서버 주소(localhost:3300/order-test/)로 열어야 디스코드로 보내져요.'; return; }
+      socket.emit('burger_done', { customers: [order.customer], answer: order.order, entered }, r => {
+        if (!r) { note.textContent = '방금 보낸 주문을 처리 중이에요. 잠깐 뒤에 다시 눌러 주세요.'; return; }
+        const why = [r.missing.length && `빠뜨림: ${r.missing.join(', ')}`, r.wrong.length && `개수 틀림: ${r.wrong.join(', ')}`, r.extra.length && `안 시킨 것: ${r.extra.join(', ')}`].filter(Boolean).join(' · ');
+        note.textContent = (r.ok ? '주문 맞음!' : `주문 틀림 (${why})`) + (discord === 'connected' ? ' → 코코가 디스코드에서 한마디 하는 중…' : '');
+      });
+    }
+    document.getElementById('good').onclick = () => orderDone(true);
+    document.getElementById('bad').onclick = () => orderDone(false);
+    document.getElementById('show').onclick = () => { const s = document.getElementById('sheet'); s.hidden = !s.hidden; };
+
+    const freq = new Uint8Array(512);
+    function voiceLevel() {
+      if (!analyser || audio.paused) return 0;
+      analyser.getByteFrequencyData(freq);
+      const hz = 44100 / 1024;
+      let sum = 0, n = 0;
+      for (let i = Math.floor(300 / hz); i < 3000 / hz; i++) { sum += freq[i]; n++; }
+      return sum / n / 255;
+    }
+
+    let lastSub = '';
+    function draw(now) {
+      const t = now / 1000;
+      ctx.drawImage(img.bg, 0, 0);
+      const raw = voiceLevel();
+      level += (raw - level) * 0.5;
+      slow += (raw - slow) * 0.06;
+      const rapping = audio && !audio.paused;
+      const at = rapping ? audio.currentTime : 0;
+      const want = rapping && vocalTime(at) && level > slow * 1.04;
+      if (want !== mouthOpen && now - mouthSince > (mouthOpen ? 70 : 50)) { mouthOpen = want; mouthSince = now; }
+
+      // 자막 (시험용: 실제 게임에서는 랩이 끝난 뒤에만 보여 줄 것)
+      const line = rapping && subsOn ? lines.find(l => at >= l.from && at < l.to) : null;
+      const sub = line ? line.text : '';
+      if (sub !== lastSub) { document.getElementById('sub').textContent = sub; lastSub = sub; }
+
+      if (mood.name !== 'base' && now > mood.until) mood.name = 'base';
+      const since = (now - mood.at) / 1000;
+      let sy = 1 + 0.012 * Math.sin(t * 2.6);
+      let dy = 3 * Math.sin(t * 1.3), dx = 0, rot = 0.008 * Math.sin(t * 0.9);
+      if (rapping) {
+        const beat = at * (BPM / 60) * Math.PI;
+        dy += 9 * Math.abs(Math.sin(beat)) * (0.5 + level);
+        rot += 0.03 * Math.sin(beat / 2);
+      }
+      if (mood.name === 'happy') {
+        const b = Math.max(0, 1 - since / 1.2);
+        dy -= 30 * Math.abs(Math.sin(since * Math.PI * 3.3)) * b;
+        sy *= 1 + 0.03 * Math.sin(since * Math.PI * 6.6) * b;
+      }
+      if (mood.name === 'angry') {
+        const b = Math.max(0, 1 - since / 0.7);
+        dx = 7 * Math.sin(since * 70) * b;
+        rot += 0.02 * Math.sin(since * 50) * b;
+      }
+
+      const face = mood.name === 'happy' ? img.happy : mood.name === 'angry' ? img.angry : img.base;
+      const size = 1024 * POS.s;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, cv.width, COUNTER);
+      ctx.clip();
+      ctx.translate(POS.cx + dx, POS.bottom + dy);
+      ctx.rotate(rot);
+      ctx.scale(1, sy);
+      ctx.drawImage(face, -size / 2, -size, size, size);
+      if (face === img.base && mouthOpen) ctx.drawImage(mouthLayer, -size / 2, -size, size, size);
+      ctx.restore();
+      requestAnimationFrame(draw);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+{
+  "burger": [
+    {
+      "id": "cheese",
+      "name": "펑펑 치즈버거",
+      "say": [
+        "펑펑 치즈버거",
+        "치즈버거",
+        "cheeseburger"
+      ]
+    },
+    {
+      "id": "bulgogi",
+      "name": "더블 불고기버거",
+      "say": [
+        "더블 불고기버거",
+        "불고기버거",
+        "불고기"
+      ]
+    },
+    {
+      "id": "chicken",
+      "name": "매콤 치킨버거",
+      "say": [
+        "매콤 치킨버거",
+        "치킨버거",
+        "spicy chicken"
+      ]
+    },
+    {
+      "id": "shrimp",
+      "name": "통새우버거",
+      "say": [
+        "통새우버거",
+        "새우버거",
+        "shrimp burger"
+      ]
+    },
+    {
+      "id": "bacon",
+      "name": "베이컨 타워버거",
+      "say": [
+        "베이컨 타워버거",
+        "타워버거",
+        "bacon tower"
+      ]
+    }
+  ],
+  "side": [
+    {
+      "id": "fries",
+      "name": "감자튀김",
+      "say": [
+        "감자튀김",
+        "감튀",
+        "fries"
+      ]
+    },
+    {
+      "id": "cheesestick",
+      "name": "치즈스틱",
+      "say": [
+        "치즈스틱",
+        "cheese stick"
+      ]
+    },
+    {
+      "id": "nugget",
+      "name": "너겟",
+      "say": [
+        "너겟",
+        "nugget"
+      ]
+    },
+    {
+      "id": "onion",
+      "name": "어니언링",
+      "say": [
+        "어니언링",
+        "onion ring"
+      ]
+    },
+    {
+      "id": "flurry",
+      "name": "넥플러리",
+      "say": [
+        "넥플러리",
+        "플러리"
+      ]
+    }
+  ],
+  "drink": [
+    {
+      "id": "cola",
+      "name": "콜라",
+      "say": [
+        "콜라",
+        "coke"
+      ]
+    },
+    {
+      "id": "cider",
+      "name": "사이다",
+      "say": [
+        "사이다"
+      ]
+    },
+    {
+      "id": "shake",
+      "name": "딸기 쉐이크",
+      "say": [
+        "딸기 쉐이크",
+        "쉐이크",
+        "strawberry shake"
+      ]
+    },
+    {
+      "id": "lemon",
+      "name": "레몬에이드",
+      "say": [
+        "레몬에이드",
+        "lemonade"
+      ]
+    },
+    {
+      "id": "mtn",
+      "name": "마운틴두",
+      "say": [
+        "마운틴두"
+      ]
+    }
+  ]
+}

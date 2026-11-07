@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Show me the burger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="burger.css">
+</head>
+<body>
+  <header class="top">
+    <a class="back" href="../">← 다른 게임</a>
+    <h1 class="logo">Show me the burger</h1>
+    <div id="progress" class="progress"></div>
+    <span id="discord" class="pill">디스코드 확인 중</span>
+  </header>
+
+  <main class="layout">
+    <div class="stage">
+      <canvas id="c" width="1536" height="864"></canvas>
+      <div id="bubbles"></div>
+      <div id="status" class="status"></div>
+      <div class="timer"><div id="timerbar"></div></div>
+    </div>
+
+    <section class="pos" id="pos">
+      <div id="menu" class="menu"></div>
+      <aside class="ticket">
+        <h2>주문서</h2>
+        <ul id="lines" class="lines"></ul>
+        <div class="row">
+          <button id="replay" type="button" class="ghost">🔁 다시 듣기</button>
+          <button id="clear" type="button" class="ghost">비우기</button>
+        </div>
+        <button id="submit" type="button" class="submit">주문 완료</button>
+      </aside>
+      <div id="receipt" class="receipt" hidden></div>
+    </section>
+  </main>
+
+  <div id="overlay" class="overlay">
+    <div class="card">
+      <h1>Show me the burger</h1>
+      <p class="sub">손님이 <b>랩으로 주문</b>해요. 들으면서 바로 포스기에 찍으세요!</p>
+      <div class="faces"><img src="img/coco-base.png" alt="코코"><img src="img/lovey-base.png" alt="러비"><img src="img/rou-base.png" alt="루"></div>
+      <ul class="rules">
+        <li>한 판에 손님 <b>3팀</b> (혼자 오거나 둘이 와요)</li>
+        <li>다시 듣기는 손님마다 <b>1번</b>. 다시 듣고 맞히면 <b>아슬아슬</b></li>
+        <li>랩이 끝나고 <b>15초</b> 안에 주문 완료를 눌러요</li>
+        <li>"하나 더", "말고", "빼 주세요" 같은 함정을 조심!</li>
+      </ul>
+      <button id="go" type="button" class="go">영업 시작 ▶</button>
+      <p class="tip">손님 반응은 디스코드 음성방 <b>투닥-아레나</b>에서 들려요. 소리를 켜 주세요.</p>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="burger.js"></script>
+</body>
+</html>

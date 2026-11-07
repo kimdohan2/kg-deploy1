@@ -1,4 +1,4 @@
-// 투닥 아레나 화면 — 서버가 보내준 상태를 그리고, 입력과 효과음만 담당한다. 게임은 밀치기(tudak)·알까기(alkkagi) 두 가지.
+// 투닥 아레나 화면 — 서버가 보내준 상태를 그리고, 입력과 효과음만 담당한다. 게임은 밀치기(tudak)·알까기(alkkagi)·카페(cafe, cafe.js) 세 가지.
 const $ = s => document.querySelector(s);
 const canvas = $('#c');
 const ctx = canvas.getContext('2d');
@@ -57,6 +57,10 @@ $('#chatter').onclick = () => socket.emit('chatter', !chatterOn);
 // 판이 끝나거나 내가 탈락하면 다음 판은 직접 시작 (버튼은 화면 가운데에 새로 그려지므로 위임으로 받는다)
 function restart() {
   if (role !== 'player' || !state) return;
+  if (state.mode === 'cafe') {
+    if (state.phase === 'closed') socket.emit('restart');
+    return;
+  }
   if (state.mode === 'alkkagi') {
     if (state.phase === 'intermission' || (state.phase !== 'waiting' && !state.counts.player)) socket.emit('restart');
     return;
@@ -71,7 +75,7 @@ document.addEventListener('click', e => { if (e.target.closest('#again')) restar
 socket.on('role', r => { role = r; });
 
 socket.on('state', s => {
-  for (const e of s.entities ?? s.stones) {
+  for (const e of s.entities ?? s.stones ?? []) {
     if (prevAlive[e.id] && !e.alive) fallAnim[e.id] = { at: performance.now(), x: e.x, y: e.y };
     prevAlive[e.id] = e.alive;
   }
@@ -156,6 +160,10 @@ socket.on('fx', fx => {
       noise(0.05, { vol: 0.2 + 0.4 * fx.power, freq: 2600, q: 2 });
       tone(900 + 500 * fx.power, 0.05, { type: 'triangle', vol: 0.12 });
       break;
+    // 카페
+    case 'ticket': tone(1180, 0.08, { vol: 0.05 }); tone(1480, 0.1, { vol: 0.05, at: 0.08 }); break;
+    case 'good': [784, 988, 1319].forEach((f, i) => tone(f, 0.14, { type: 'triangle', vol: 0.09, at: i * 0.08 })); break;
+    case 'bad': tone(330, 0.25, { type: 'sawtooth', vol: 0.05, to: 160 }); break;
     case 'turn':
       if (fx.who === 'player' && role === 'player') {
         tone(880, 0.12, { vol: 0.06 }); tone(1320, 0.16, { vol: 0.06, at: 0.1 });
@@ -196,6 +204,7 @@ const nameOf = id => id === 'player' ? state?.humanName : cfg?.bots.find(b => b.
 
 function renderHud() {
   const s = state;
+  if (s.mode === 'cafe') return renderCafeHud(s);
   const ak = s.mode === 'alkkagi';
   if (ak) {
     const turn = s.phase === 'turn' && s.turn
@@ -323,6 +332,7 @@ function draw(now) {
   ctx.fillRect(0, 0, W, H);
   if (!state || !cfg) return;
   if (state.mode === 'alkkagi') drawAlkkagi(now, W, H);
+  else if (state.mode === 'cafe') drawCafe(now, W, H);
   else drawTudak(now, W, H);
 }
 

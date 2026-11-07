@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>드라이브스루 움직임 시험</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #141826; --panel: #1e2336; --line: rgba(255,255,255,.14); --text: #f4f1ea; --accent: #ffcf4a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'Jua', system-ui, sans-serif;
+      display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px; }
+    h1 { margin: 0; font-weight: normal; color: var(--accent); font-size: 24px; }
+    canvas { width: min(1100px, 100%); aspect-ratio: 3 / 2; border-radius: 14px; border: 1px solid var(--line); background: #000; }
+    .bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    button { font: inherit; font-size: 18px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+    button.main { background: var(--accent); color: #3b2600; border: 0; }
+    .note { color: #a9adbd; font-size: 14px; text-align: center; max-width: 760px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <h1>코코 움직임 시험</h1>
+  <canvas id="c" width="1536" height="1024"></canvas>
+  <div class="bar">
+    <button id="rap" class="main" type="button">🎤 랩 틀기</button>
+    <button id="good" type="button">✅ 주문 맞음</button>
+    <button id="bad" type="button">❌ 주문 틀림</button>
+  </div>
+  <p class="note">배경은 그대로, 코코만 숨쉬고 들썩여요. 랩을 틀면 소리 크기에 맞춰 입이 열리고 박자에 맞춰 고개를 흔들어요.</p>
+
+  <script>
+    const cv = document.getElementById('c');
+    const ctx = cv.getContext('2d');
+    const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+    const SILL = 548;                          // 창문 아래턱 (이 아래로는 차 안이라 안 그림)
+    const POS = { x: 712, y: 300, s: 0.31 };   // 코코 그림(1024) 놓는 자리와 크기
+    const MOUTH = { x: 527, y: 505, rx: 78, ry: 58 };  // 코코 그림에서 입 위치 (입 그림을 이만큼만 덧그림)
+
+    let img = {}, mood = { name: 'base', until: 0, at: 0 };
+    let analyser = null, audio = null, level = 0, slow = 0, beatPhase = 0, mouthOpen = false, mouthSince = 0;
+    // 랩이 나오는 구간 (곡을 만들 때 정한 구간 길이: 들어가는 부분 3초 → 랩 12초 → 후렴 10초)
+    const VOCAL = [[3.0, 25.0]];
+    const inVocal = s => VOCAL.some(([a, b]) => s >= a && s <= b);
+    const mouthLayer = document.createElement('canvas');
+    mouthLayer.width = mouthLayer.height = 1024;
+
+    Promise.all(['bg.jpg', 'coco-base.png', 'coco-mouth.png', 'coco-happy.png', 'coco-angry.png'].map(load)).then(([bg, base, mouth, happy, angry]) => {
+      img = { bg, base, mouth, happy, angry };
+      // 입 벌린 그림에서 입 주변만 가장자리를 흐리게 오려 둔다 (나머지는 기본 그림 그대로)
+      const m = mouthLayer.getContext('2d');
+      m.drawImage(mouth, 0, 0);
+      m.globalCompositeOperation = 'destination-in';
+      const g = m.createRadialGradient(MOUTH.x, MOUTH.y, 10, MOUTH.x, MOUTH.y, MOUTH.rx);
+      g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.7, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      m.setTransform(1, 0, 0, MOUTH.ry / MOUTH.rx, 0, MOUTH.y * (1 - MOUTH.ry / MOUTH.rx));
+      m.fillStyle = g;
+      m.fillRect(0, 0, 1024, 1024 * MOUTH.rx / MOUTH.ry);
+      requestAnimationFrame(draw);
+    });
+
+    function setMood(name, ms) { mood = { name, until: performance.now() + ms, at: performance.now() }; }
+
+    document.getElementById('rap').onclick = async () => {
+      if (!audio) {
+        audio = new Audio('rap.mp3');
+        const ac = new AudioContext();
+        const src = ac.createMediaElementSource(audio);
+        analyser = ac.createAnalyser();
+        analyser.fftSize = 1024;
+        src.connect(analyser).connect(ac.destination);
+      }
+      if (audio.paused) { audio.currentTime = 0; await audio.play(); } else audio.pause();
+    };
+    document.getElementById('good').onclick = () => setMood('happy', 2200);
+    document.getElementById('bad').onclick = () => setMood('angry', 2200);
+
+    // 목소리 크기: 사람 목소리 대역(약 300~3000Hz)만 본다 (드럼·베이스에 입이 안 움직이게)
+    const freq = new Uint8Array(512);
+    function voiceLevel() {
+      if (!analyser || audio.paused) return 0;
+      analyser.getByteFrequencyData(freq);
+      const hz = 44100 / 1024;
+      let sum = 0, n = 0;
+      for (let i = Math.floor(300 / hz); i < 3000 / hz; i++) { sum += freq[i]; n++; }
+      return sum / n / 255;
+    }
+
+    function draw(now) {
+      const t = now / 1000;
+      ctx.drawImage(img.bg, 0, 0);
+      const raw = voiceLevel();
+      level += (raw - level) * 0.5;     // 빠르게 따라감
+      slow += (raw - slow) * 0.06;      // 천천히 따라감 (비트가 깔린 평균 크기)
+      const rapping = audio && !audio.paused;
+      // 입: 랩 구간에서 소리가 평균보다 툭 커질 때 열고, 열리면 최소 0.07초·닫히면 최소 0.05초 유지 (말하듯 뻐끔뻐끔)
+      const want = rapping && inVocal(audio.currentTime) && level > slow * 1.04;
+      if (want !== mouthOpen && now - mouthSince > (mouthOpen ? 70 : 50)) { mouthOpen = want; mouthSince = now; }
+      if (rapping) beatPhase = audio.currentTime * (160 / 60) * Math.PI;   // 160 BPM
+
+      if (mood.name !== 'base' && now > mood.until) mood.name = 'base';
+      const since = (now - mood.at) / 1000;
+
+      // 기본 움직임: 숨쉬기(세로로 살짝) + 위아래 들썩 + 살짝 기울기
+      let sy = 1 + 0.012 * Math.sin(t * 2.6);
+      let dy = 3 * Math.sin(t * 1.3);
+      let dx = 0, rot = 0.008 * Math.sin(t * 0.9);
+      if (rapping) {   // 박자에 맞춰 고개 까딱 + 목소리 클수록 크게
+        dy += 7 * Math.abs(Math.sin(beatPhase)) * (0.5 + level);
+        rot += 0.025 * Math.sin(beatPhase / 2);
+      }
+      if (mood.name === 'happy') {   // 통통 두 번 튀기
+        const b = Math.max(0, 1 - since / 1.2);
+        dy -= 26 * Math.abs(Math.sin(since * Math.PI * 3.3)) * b;
+        sy *= 1 + 0.03 * Math.sin(since * Math.PI * 6.6) * b;
+      }
+      if (mood.name === 'angry') {   // 부르르 떨기
+        const b = Math.max(0, 1 - since / 0.7);
+        dx = 6 * Math.sin(since * 70) * b;
+        rot += 0.02 * Math.sin(since * 50) * b;
+      }
+
+      const face = mood.name === 'happy' ? img.happy : mood.name === 'angry' ? img.angry : img.base;
+      const size = 1024 * POS.s;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, cv.width, SILL);   // 창문 아래턱 위만
+      ctx.clip();
+      // 아래(어깨) 기준으로 늘였다 줄였다
+      ctx.translate(POS.x + size / 2 + dx, POS.y + size + dy);
+      ctx.rotate(rot);
+      ctx.scale(1, sy);
+      ctx.drawImage(face, -size / 2, -size, size, size);
+      if (face === img.base && mouthOpen) ctx.drawImage(mouthLayer, -size / 2, -size, size, size);
+      ctx.restore();
+
+      requestAnimationFrame(draw);
+    }
+  </script>
+</body>
+</html>

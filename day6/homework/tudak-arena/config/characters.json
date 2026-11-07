@@ -8,7 +8,7 @@
   "bots": [
     {
       "id": "coco",
-      "persona": "활발한 분위기 메이커. 리액션이 크고 친구를 챙기고, 밀리면 억울해하고 배신당하면 서운해함",
+      "persona": "정신없이 신난 말괄량이. 터지는 거 좋아하고 효과음과 웃음이 많음, 계획 없이 덤비고 심심한 걸 못 참음",
       "name": "코코",
       "speakName": "코코",
       "color": "#FF8FAB",
@@ -21,7 +21,7 @@
     },
     {
       "id": "lovey",
-      "persona": "시크하고 말이 짧음. 침착하게 끝까지 살아남는 생존형, 무심하게 비꼼",
+      "persona": "자신만만한 모험가. 자랑이 아니라며 자랑하고, 실수는 절대 인정 안 함, 위험하면 쏙 빠져 끝까지 살아남음",
       "name": "러비",
       "speakName": "러비",
       "color": "#7C8CE6",
@@ -30,11 +30,11 @@
       "apiPort": 8652,
       "voice": "ko-KR-InJoonNeural",
       "speed": 0.9,
-      "elevenlabsVoice": "Ir7oQcBXWiq4oFGROCfj"
+      "elevenlabsVoice": "1W00IGEmNmwmsDeYy7ag"
     },
     {
       "id": "rou",
-      "persona": "장난꾸러기 자칭 돌진왕. 막 돌진하다 혼자 떨어져도 작전이라 우김",
+      "persona": "쿨한 척하는 골목대장 발명가. 되감기·타이밍 말버릇, 막 돌진하다 혼자 떨어져도 계산된 거라 우김",
       "name": "Rou",
       "speakName": "루",
       "color": "#FFA53D",
@@ -43,7 +43,7 @@
       "apiPort": 8653,
       "voice": "ko-KR-HyunsuMultilingualNeural",
       "speed": 1.2,
-      "elevenlabsVoice": "LKOcTG4J4tYTPR9DnLeM"
+      "elevenlabsVoice": "RU7aSi6lT4uQBXMLgDxK"
     }
   ]
 }

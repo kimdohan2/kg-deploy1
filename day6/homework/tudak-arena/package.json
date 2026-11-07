@@ -11,6 +11,7 @@
     "hermes": "node scripts/hermes.js",
     "voices": "node scripts/voices.js",
     "clips": "node scripts/clips.js",
+    "burger-songs": "node scripts/burger-songs.js",
     "share": "caffeinate -i cloudflared tunnel --url http://localhost:3300"
   },
   "dependencies": {

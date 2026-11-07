@@ -90,10 +90,12 @@ npm run setup-hermes
 - **한 명만**: **#투닥-중계**에서 `/voice` → 그 봇 고르기 → mode **leave**
 - **완전히 끄기**: `npm run bots` 창에서 Ctrl-C (디스코드에서 오프라인이 돼요)
 
-**게임 고르기**: 시작 화면에서 **밀치기**(투닥 아레나) 또는 **알까기**를 골라요. 봇·목소리·감탄사는 두 게임이 같이 써요.
+**게임 고르기**: 시작 화면 맨 위가 대표 게임 **Show me the burger**(`/burger/`)예요. 아래에서 **밀치기**(투닥 아레나), **알까기**, **카페**도 고를 수 있어요. 봇·목소리는 모든 게임이 같이 써요.
 
+- **Show me the burger** (대표 게임): 도도가 버거집 점원, 코코·러비·루가 손님이에요. 손님이 **랩으로 주문**하면 들으면서 아래 포스기(버거 5·사이드 5·음료 5)에 찍고 **주문 완료**. 한 판에 손님 3팀(혼자 또는 둘이, 보통 60% · 어려움 40%). 다시 듣기는 손님마다 1번(다시 듣고 맞히면 "아슬아슬"), 랩이 끝나고 15초 안에 못 누르면 시간 초과. 주문 완료 뒤 영수증(정답·내가 찍은 것·가사)이 뜨고, 손님 봇이 Hermes로 디스코드 음성방에서 한마디 해요(맞으면 기뻐하고, 틀리면 뭐가 틀렸는지 따짐). 사이트에 들어온 사람마다 따로 한 판씩 해요. 랩 24곡은 미리 만들어 둔 것(`burger/songs.json`, `npm run burger-songs`).
 - **밀치기** 조작: 방향키 / WASD 이동, 스페이스 돌진.
 - **알까기**: 4명이 돌 3개씩. 도도 → 코코 → 러비 → Rou 차례로, 내 차례(20초)에 내 돌을 누르고 뒤로 끌었다 놓으면 반대 방향으로 튕겨 나가요(끈 만큼 세게). 판 밖으로 나간 돌은 사라지고, 마지막까지 돌이 남은 사람이 우승. 내가 조준하는 동안 봇이 훈수를 두고, 봇은 쏘기 전에 한마디 하고 쏴요.
+- **카페**: 도도가 사장, 코코·러비·Rou가 두 번씩 손님으로 와요(하루 6명). 손님이 음성방에서 주문하면 화면에 주문표가 떠요. 재료(1~8)를 눌러 컵에 담고 **내기**(Enter), 잘못 담으면 **비우기**(⌫). 맞으면 빠를수록 팁이 많아요. 코코는 가끔 만드는 중에 주문을 바꾸고, 러비는 꼭 하나를 더 얹어 달라고 하고, Rou는 두 번째로 오면 "아까 그거"라고만 해요. 35초 안에 못 내면 손님이 나가요. 영업이 끝나면 셋이 가게 리뷰를 해요.
 
 웹 화면 오른쪽 위 **봇 수다** 버튼으로 수다를 잠깐 끌 수 있어요(토큰 절약).
 
@@ -140,15 +142,19 @@ tudak-arena/
 │  ├─ index.js      웹 서버 + 게임 루프 + 심판 시작
 │  ├─ game.js       밀치기: 물리, 탈락, 우승 판정
 │  ├─ alkkagi.js    알까기: 판·돌 물리, 차례, 승패 (alkkagi-ai.js 봇 조준, alkkagi-talk.js 훈수·선언·감탄사)
+│  ├─ burger.js     Show me the burger: 사람마다 한 판, 곡 고르기, 채점 (burger-talk.js 손님 봇 반응)
+│  ├─ cafe.js       카페: 손님 순서, 주문, 채점·팁 (cafe-talk.js 주문·반응·리뷰 시키기)
 │  ├─ bot-ai.js     봇 움직임 (Rou 막 돌진 · 러비 침착 · 코코 추격)
 │  └─ referee.js    사회자 규칙, 디스코드 멘션, 대꾸 연결
-├─ public/          웹 화면 (캔버스, 효과음 합성, 말풍선)
+├─ public/          웹 화면 (캔버스, 효과음 합성, 말풍선) · public/burger/ Show me the burger 화면·그림·노래
+├─ burger/          Show me the burger 메뉴(menu.json)와 랩 24곡(songs.json)
 ├─ bots/            Soul.md 원본 (공통 규칙 + 캐릭터별)
 ├─ config/          characters.json, referee.json
 ├─ scripts/
 │  ├─ setup-hermes.js  봇 프로필 3개 만들기·맞추기
 │  ├─ voices.js        ElevenLabs 목소리 찾기·들어 보기 (npm run voices)
 │  ├─ clips.js         즉시 감탄사 미리 만들기 (npm run clips, config/clips.json)
+│  ├─ burger-songs.js  투닥버거 주문 랩 만들기 (npm run burger-songs, burger/songs.json → public/burger/songs/)
 │  ├─ start-bots.js    봇 게이트웨이 3개 켜기 (npm run bots)
 │  ├─ patch-hermes.js  Hermes 수정 적용 (음성방 소리, 한 명만 대답, 나 따라 들어오기 · 위 두 명령이 자동 실행)
 │  └─ hermes.js        이 폴더의 Hermes 실행 (npm run hermes -- ...)
