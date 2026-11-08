@@ -12,6 +12,7 @@
     "voices": "node scripts/voices.js",
     "clips": "node scripts/clips.js",
     "burger-songs": "node scripts/burger-songs.js",
+    "burger-greetings": "node scripts/burger-greetings.js",
     "share": "caffeinate -i cloudflared tunnel --url http://localhost:3300"
   },
   "dependencies": {

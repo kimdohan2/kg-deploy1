@@ -2,9 +2,9 @@
   "model": "claude-haiku-5-5",
   "tts": { "provider": "elevenlabs", "elevenlabsModel": "eleven_v4" },
   "stt": { "provider": "elevenlabs", "elevenlabsModel": "scribe_v2" },
-  "player": { "color": "#7CE07C", "callName": "도도" },
+  "player": { "color": "#7CE07C", "callName": "친구" },
   "voiceDefault": "coco",
-  "voiceChannel": "투닥-아레나",
+  "voiceChannel": "1566460083791990865",
   "bots": [
     {
       "id": "coco",
@@ -17,7 +17,7 @@
       "apiPort": 8651,
       "voice": "ko-KR-SunHiNeural",
       "speed": 1.15,
-      "elevenlabsVoice": "8jHHF8rMqMlg8if2mOUe"
+      "elevenlabsVoice": "6aLvJgKp2AeWprc8jATw"
     },
     {
       "id": "lovey",
@@ -30,7 +30,7 @@
       "apiPort": 8652,
       "voice": "ko-KR-InJoonNeural",
       "speed": 0.9,
-      "elevenlabsVoice": "1W00IGEmNmwmsDeYy7ag"
+      "elevenlabsVoice": "DjH4juNj0ukxTe01WKSd"
     },
     {
       "id": "rou",
@@ -43,7 +43,7 @@
       "apiPort": 8653,
       "voice": "ko-KR-HyunsuMultilingualNeural",
       "speed": 1.2,
-      "elevenlabsVoice": "RU7aSi6lT4uQBXMLgDxK"
+      "elevenlabsVoice": "lJE9ySSAx9W7MBYUOb3S"
     }
   ]
 }

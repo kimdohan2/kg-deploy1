@@ -61,7 +61,7 @@ export class Referee {
 
   // 사건 순간의 즉시 감탄사: 미리 만든 짧은 소리라 Claude를 거치지 않고 바로 나온다.
   // 상황에 맞는 긴 말(수다)은 아래 묶음 처리(flush → react)로 따로, 조금 뒤에 나온다.
-  // 그 봇의 kind 감탄사를 확률 p로 낸다 (봇이 아니거나 감탄사가 없으면 아무 일 없음). 알까기도 쓴다.
+  // 그 봇의 kind 감탄사를 확률 p로 낸다 (봇이 아니거나 감탄사가 없으면 아무 일 없음).
   playClip(id, kind, p = 1) {
     if (!this.clips || !this.bots.some(b => b.id === id) || Math.random() >= p) return;
     const text = this.clips.play(id, kind);

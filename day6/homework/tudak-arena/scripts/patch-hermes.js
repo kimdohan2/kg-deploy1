@@ -29,6 +29,7 @@ const PATCHES = [
   },
   {
     // 사람이 음성방에서 말하면 봇 3명이 모두 알아듣고 동시에 대답한다.
+    // 먼저 게임 서버에 "이 말 게임이 가져가?"를 묻는다(gate). 가져가면 아무도 직접 대답하지 않는다(버거 손님 되묻기).
     // 말에서 먼저 불린 봇 한 명만 대답한다. 이름이 없으면 게임 서버가 Jev로 고른 봇이,
     // 게임 서버가 꺼져 있거나 Jev가 못 고르면 기본 봇(voiceDefault)이 대답한다.
     // 이름은 setup-hermes가 프로필 .env에 넣는다(TUDAK_VOICE_*). 값이 없으면 원래대로 동작.
@@ -39,6 +40,19 @@ const PATCHES = [
     replace: `        if not text_ch_id:
             return
         import os as _tos, re as _tre  ${MARK}: only the first bot named in the speech answers (default bot when none)
+        if _tos.getenv("TUDAK_JUDGE_URL"):
+            # the game server may take this speech itself (Show me the burger: asking the customer) -> nobody answers here
+            def _gate():
+                import json as _tj, urllib.request as _tu
+                _rq = _tu.Request(_tos.environ["TUDAK_JUDGE_URL"], data=_tj.dumps({"speech": transcript, "gate": True}).encode(),
+                                  headers={"Content-Type": "application/json"})
+                with _tu.urlopen(_rq, timeout=2.5) as _r:
+                    return _tj.load(_r).get("skip")
+            try:
+                if await asyncio.to_thread(_gate):
+                    return
+            except Exception:
+                pass
         def _first(key):
             hits = [m.start() for n in _tos.getenv(key, "").split(",") if n
                     for m in [_tre.search(r"(?<![0-9A-Za-z가-힣])" + _tre.escape(n), transcript, _tre.I)] if m]
@@ -65,6 +79,31 @@ const PATCHES = [
                 return
             if _mine is not None and _other is not None and _other < _mine:
                 return
+`,
+  },
+  {
+    // 음성방에 들어가 있으면 그 채팅 채널의 글에는 멘션 없이도 봇 3명이 다 대답한다(Hermes 기본).
+    // 사람이 쓴 글도 먼저 게임 서버에 "이 글 게임이 가져가?"를 묻는다(gate). 가져가면 아무도 직접 대답하지 않는다.
+    // (Show me the burger: 랩 주문을 받는 중에 채팅으로 손님에게 되묻기) "/"로 시작하는 명령과 봇 글은 묻지 않는다.
+    name: '채팅 글도 게임이 먼저 가져가기',
+    file: 'plugins/platforms/discord/adapter.py',
+    after: 'async def _handle_message(',
+    find: '        # Auto-thread: isolate each @mention in a text channel into its own thread (Slack-style).\n',
+    replace: `        try:  ${MARK}: typed messages can be taken by the game server first (Show me the burger: asking the customer)
+            import os as _tos
+            _judge = _tos.getenv("TUDAK_JUDGE_URL")
+            if _judge and raw_content and not raw_content.startswith("/") and not getattr(message.author, "bot", False):
+                def _gate_typed():
+                    import json as _tj, urllib.request as _tu
+                    _rq = _tu.Request(_judge, data=_tj.dumps({"speech": raw_content, "gate": True, "typed": True}).encode(),
+                                      headers={"Content-Type": "application/json"})
+                    with _tu.urlopen(_rq, timeout=2.5) as _r:
+                        return _tj.load(_r).get("skip")
+                if await asyncio.to_thread(_gate_typed):
+                    return False
+        except Exception:
+            pass
+        # Auto-thread: isolate each @mention in a text channel into its own thread (Slack-style).
 `,
   },
   {

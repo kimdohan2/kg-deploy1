@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>코코 목소리 맞추기 시험</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #141826; --panel: #1e2336; --line: rgba(255,255,255,.14); --text: #f4f1ea; --muted: #a9adbd; --accent: #ffcf4a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Jua', system-ui, sans-serif; padding: 20px 16px 40px; }
+    main { max-width: 820px; margin: 0 auto; }
+    h1 { margin: 0 0 4px; font-weight: normal; color: var(--accent); }
+    h2 { margin: 26px 0 4px; font-weight: normal; color: var(--accent); font-size: 21px; }
+    p.lead { color: var(--muted); margin: 0 0 12px; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+    .row { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+    .row b { font-weight: normal; font-size: 17px; }
+    .row small { display: block; color: var(--muted); margin: 2px 0 6px; font-size: 13px; }
+    audio { width: 100%; height: 36px; }
+    .missing { color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>코코 목소리 맞추기 시험</h1>
+  <p class="lead">코코가 말하는 목소리를 랩 보컬 목소리로 맞추는 시험이에요. 게임 안의 노래는 그대로예요.</p>
+
+  <h2>1. 코코 곡별 랩 보컬 (노래에서 떼어낸 목소리)</h2>
+  <p class="lead">넷이 같은 사람처럼 들리는지 들어 봐 주세요. 비슷하면 넷을 합쳐서 복제하고, 다르면 마음에 드는 곡만 써요.</p>
+  <div class="grid" id="raps"></div>
+
+  <h2>2. 같은 대사, 목소리 비교</h2>
+  <p class="lead">지금 코코 목소리(Han)와 coco-2 랩 보컬로 복제한 목소리를 같은 대사로 비교해요. 복제 쪽이 랩 목소리와 같은 사람처럼 들리면 성공.</p>
+  <div class="grid" id="says"></div>
+
+  <h2>3. 지난 시험 (랩 보컬을 Han으로 바꾼 것)</h2>
+  <div class="grid" id="old"></div>
+</main>
+<script>
+  const row = ([src, title, note]) => `<div class="row"><b>${title}</b><small>${note || ''}</small>
+    <audio controls preload="metadata" src="${src}" onerror="this.outerHTML='<div class=missing>아직 없음</div>'"></audio></div>`;
+  document.getElementById('raps').innerHTML = ['coco-1', 'coco-2', 'coco-3', 'coco-4'].map(id =>
+    row([`rap-${id}.mp3`, id, `원곡: <a href="../songs/${id}.mp3" style="color:inherit">듣기</a>`])).join('');
+  const LINES = ['"안녕하세요~ 주문할게요!"', '"Hi~ 배고파서 왔어요. 바로 주문할게요!"', '"헐, 도도 완벽하다아! 치즈버거 두 개 딱 맞혔어! 꺄하하!" (디스코드 반응 느낌)'];
+  document.getElementById('says').innerHTML = row(['rap-coco-2.mp3', '기준: coco-2 랩 보컬', '이 목소리로 복제했어요']) +
+    LINES.flatMap((line, i) => [
+      row([`say-now-${i + 1}.mp3`, '지금 코코 (Han)', line]),
+      row([`say-clone-${i + 1}.mp3`, '⭐ 복제: 코코 랩 (coco-2)', line]),
+    ]).join('');
+  document.getElementById('old').innerHTML = [
+    ['../songs/coco-1.mp3', '원래 곡'], ['coco-1-coco.mp3', '보컬을 Han으로 바꾼 곡'],
+  ].map(row).join('');
+</script>
+</body>
+</html>

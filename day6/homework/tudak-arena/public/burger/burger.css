@@ -27,13 +27,17 @@ button:disabled { cursor: default; opacity: .45; }
   animation: pop .25s ease-out; }
 .bubble::after { content: ''; position: absolute; left: 50%; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--paper); transform: translateX(-50%); }
 @keyframes pop { from { transform: translateX(-50%) scale(.8); opacity: 0; } }
+.who-tag { position: absolute; left: 2%; top: 3%; padding: 6px 14px; border-radius: 10px; background: rgba(10, 12, 20, .82); color: var(--accent); font-size: clamp(14px, 1.8vw, 21px); }
+.who-tag:empty { display: none; }
+.toast { position: absolute; left: 2%; top: 14%; padding: 6px 12px; border-radius: 999px; background: rgba(10, 12, 20, .82); font-size: clamp(13px, 1.5vw, 17px); }
+.toast:empty { display: none; }
 .status { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 6px 16px; border-radius: 999px;
   background: rgba(10, 12, 20, .8); font-size: clamp(14px, 1.7vw, 20px); white-space: nowrap; }
 .status:empty { display: none; }
-.timer { position: absolute; left: 14px; right: 14px; bottom: 4px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.12); overflow: hidden; visibility: hidden; }
-.timer.on { visibility: visible; }
-#timerbar { height: 100%; width: 100%; background: var(--accent); transform-origin: left; }
-.timer.low #timerbar { background: var(--bad); }
+.start-rap { position: absolute; left: 50%; bottom: 7%; transform: translateX(-50%); padding: 12px 30px; border-radius: 999px; border: 0;
+  background: var(--accent); color: #3b2600; font-size: clamp(18px, 2.4vw, 26px); box-shadow: 0 6px 22px rgba(0,0,0,.45); animation: pulse 1.2s ease-in-out infinite; }
+.start-rap[hidden] { display: none; }
+@keyframes pulse { 50% { transform: translateX(-50%) scale(1.06); } }
 
 .pos { position: relative; display: grid; grid-template-columns: 1fr 290px; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px; }
 .pos.off .menu, .pos.off .ticket { opacity: .55; }
@@ -48,6 +52,12 @@ button:disabled { cursor: default; opacity: .45; }
 .item .n { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--hot); color: #fff; font-size: 13px; display: grid; place-items: center; }
 .ticket { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
 .ticket h2 { margin: 0; font-weight: normal; font-size: 17px; color: var(--accent); }
+.asks { font-size: 14px; color: var(--muted); min-height: 1.3em; }
+.asks:empty { display: none; }
+.asks b { font-weight: normal; color: var(--text); }
+.asks .dots { color: var(--accent); letter-spacing: 2px; }
+.asks .wait { color: var(--accent); animation: blink 1s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .45; } }
 .lines { list-style: none; margin: 0; padding: 0; flex: 1; min-height: 90px; max-height: 190px; overflow: auto; background: var(--paper); color: var(--ink); border-radius: 10px; }
 .lines:empty::before { content: '메뉴를 누르면 여기에 담겨요'; display: block; padding: 10px; color: #9a8b7a; font-size: 14px; }
 .lines li { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-bottom: 1px dashed #e2cfae; font-size: 15px; }

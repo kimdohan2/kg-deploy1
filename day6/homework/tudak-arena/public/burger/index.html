@@ -21,14 +21,17 @@
     <div class="stage">
       <canvas id="c" width="1536" height="864"></canvas>
       <div id="bubbles"></div>
+      <div id="who" class="who-tag"></div>
+      <div id="toast" class="toast"></div>
       <div id="status" class="status"></div>
-      <div class="timer"><div id="timerbar"></div></div>
+      <button id="startRap" type="button" class="start-rap" hidden>🎤 주문 시작</button>
     </div>
 
     <section class="pos" id="pos">
       <div id="menu" class="menu"></div>
       <aside class="ticket">
         <h2>주문서</h2>
+        <div id="asks" class="asks"></div>
         <ul id="lines" class="lines"></ul>
         <div class="row">
           <button id="replay" type="button" class="ghost">🔁 다시 듣기</button>
@@ -47,12 +50,14 @@
       <div class="faces"><img src="img/coco-base.png" alt="코코"><img src="img/lovey-base.png" alt="러비"><img src="img/rou-base.png" alt="루"></div>
       <ul class="rules">
         <li>한 판에 손님 <b>3팀</b> (혼자 오거나 둘이 와요)</li>
+        <li>손님이 인사하면 <b>주문 시작</b>을 눌러 랩을 들어요</li>
         <li>다시 듣기는 손님마다 <b>1번</b>. 다시 듣고 맞히면 <b>아슬아슬</b></li>
-        <li>랩이 끝나고 <b>15초</b> 안에 주문 완료를 눌러요</li>
+        <li>랩이 끝나면 디스코드에서 손님에게 주문을 <b>3번까지</b> 되물을 수 있어요. 음성방에서 말하거나 #bot_text에 써요 ("치즈버거 두 개 맞죠?")</li>
+        <li>랩이 끝나면 <b>시간 제한 없이</b> 천천히 찍고 주문 완료를 눌러요</li>
         <li>"하나 더", "말고", "빼 주세요" 같은 함정을 조심!</li>
       </ul>
       <button id="go" type="button" class="go">영업 시작 ▶</button>
-      <p class="tip">손님 반응은 디스코드 음성방 <b>투닥-아레나</b>에서 들려요. 소리를 켜 주세요.</p>
+      <p class="tip">손님 반응은 디스코드 음성방 <b>bot_voice</b>에서 들려요. 소리를 켜 주세요.</p>
     </div>
   </div>
 
