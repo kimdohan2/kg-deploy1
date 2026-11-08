@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3FB8A0"/>
+      <stop offset="1" stop-color="#22657F"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE08A"/>
+      <stop offset="1" stop-color="#E9A93A"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- 연미복 몸통 -->
+  <path d="M96 512 C110 410 170 372 256 372 C342 372 402 410 416 512 Z" fill="#23303F"/>
+  <path d="M214 376 L256 470 L298 376 Z" fill="#FFFFFF"/>
+  <!-- 나비넥타이 -->
+  <path d="M256 392 L212 370 L212 414 Z M256 392 L300 370 L300 414 Z" fill="#E2524C"/>
+  <circle cx="256" cy="392" r="11" fill="#C23B36"/>
+  <!-- 얼굴 -->
+  <circle cx="256" cy="238" r="122" fill="#FFE3CC"/>
+  <!-- 가르마 머리 -->
+  <path d="M136 226 C134 150 186 108 256 108 C330 108 380 152 376 226 C350 196 300 176 262 150 C236 186 186 206 136 226 Z" fill="#2B2B35"/>
+  <!-- 볼 -->
+  <circle cx="190" cy="282" r="18" fill="#FFB8A8" opacity="0.7"/>
+  <circle cx="322" cy="282" r="18" fill="#FFB8A8" opacity="0.7"/>
+  <!-- 눈 -->
+  <circle cx="208" cy="248" r="11" fill="#2B2B35"/>
+  <circle cx="304" cy="248" r="11" fill="#2B2B35"/>
+  <!-- 외알 안경 -->
+  <circle cx="304" cy="248" r="30" fill="none" stroke="url(#gold)" stroke-width="7"/>
+  <path d="M332 262 C352 300 350 330 336 352" fill="none" stroke="#E9A93A" stroke-width="4"/>
+  <!-- 콧수염과 미소 -->
+  <path d="M256 290 C236 280 214 284 206 298 C226 300 244 298 256 292 C268 298 286 300 306 298 C298 284 276 280 256 290 Z" fill="#2B2B35"/>
+  <path d="M232 316 C246 328 266 328 280 316" fill="none" stroke="#B5654F" stroke-width="5" stroke-linecap="round"/>
+  <!-- 금색 열쇠 배지 -->
+  <g transform="translate(372 404) rotate(-35)">
+    <circle cx="0" cy="0" r="30" fill="url(#gold)" stroke="#B9822A" stroke-width="4"/>
+    <circle cx="0" cy="0" r="11" fill="#22657F"/>
+    <rect x="26" y="-8" width="70" height="16" rx="5" fill="url(#gold)" stroke="#B9822A" stroke-width="4"/>
+    <rect x="70" y="6" width="12" height="20" rx="3" fill="url(#gold)" stroke="#B9822A" stroke-width="4"/>
+    <rect x="50" y="6" width="10" height="14" rx="3" fill="url(#gold)" stroke="#B9822A" stroke-width="4"/>
+  </g>
+</svg>

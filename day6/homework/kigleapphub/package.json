@@ -1,0 +1,20 @@
+{
+  "name": "hubjipsa",
+  "version": "1.0.0",
+  "description": "허브집사 — 키글 앱허브의 링크와 담당자를 디스코드에서 바로 찾아 주는 Hermes 봇",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "setup-hermes": "node scripts/setup-hermes.js",
+    "bot": "node scripts/hermes.js -p hubjipsa gateway run",
+    "hermes": "node scripts/hermes.js",
+    "ask": "node scripts/apphub.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "dotenv": "^18.0.9",
+    "wrangler": "4.151.0",
+    "yaml": "^2.9.1",
+    "zod": "4.6.7"
+  }
+}
