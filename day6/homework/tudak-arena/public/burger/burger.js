@@ -449,6 +449,11 @@ function showBubble(id, text, ms = 9000) {
   $('bubbles').querySelector(`[data-id="${id}"]`)?.remove();
   b.dataset.id = id;
   $('bubbles').appendChild(b);
+  // 왼쪽 위 손님 이름표와 겹치면 말풍선을 오른쪽으로 비켜 준다
+  const tag = $('who').getBoundingClientRect(), box = b.getBoundingClientRect();
+  if (tag.width && box.left < tag.right + 8 && box.top < tag.bottom) {
+    b.style.left = `calc(${(a.cx / W) * 100}% + ${Math.ceil(tag.right + 8 - box.left)}px)`;
+  }
   if (ms) setTimeout(() => b.remove(), ms);
 }
 socket.on('say', ({ id, text }) => {
