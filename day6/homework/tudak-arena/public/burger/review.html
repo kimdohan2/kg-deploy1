@@ -60,7 +60,7 @@
   <h2>손님</h2>
   <section id="chars" class="chars"></section>
 
-  <h2>주문 랩 24곡</h2>
+  <h2 id="songsTitle">주문 랩</h2>
   <div id="filters" class="filters"></div>
   <section id="songs" class="songs"></section>
 </main>
@@ -70,7 +70,8 @@
   const CAT = { burger: '버거', side: '사이드', drink: '음료' };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  Promise.all([fetch('data/menu.json').then(r => r.json()), fetch('data/songs.json').then(r => r.json())]).then(([menu, { songs }]) => {
+  // faded.json(곡마다 md5)을 주소 뒤에 붙여서, 곡을 다시 만들면 브라우저가 예전 소리를 안 틀게 한다
+  Promise.all([fetch('data/menu.json').then(r => r.json()), fetch('data/songs.json').then(r => r.json()), fetch('songs/faded.json').then(r => r.json()).catch(() => ({}))]).then(([menu, { songs }, ver]) => {
     const items = Object.fromEntries(Object.values(menu).flat().map(m => [m.id, m]));
     const sayOf = m => m.say.find(s => /[0-9]/.test(m.name) && s !== m.name) ? ` <small>읽기: ${esc(m.say[0])}</small>` : '';
     document.getElementById('menu').innerHTML = Object.entries(menu).map(([cat, list]) =>
@@ -97,14 +98,16 @@
           <div class="genre">${esc(s.id)} · ${esc(s.genre)} · 약 ${Math.round(s.parts.reduce((a, p) => a + p.ms, 0) / 1000)}초</div>
           <div class="order">${s.order.map(o => `<span class="chip"><img src="img/menu/${o.item}.jpg" alt="">${esc(items[o.item].name)} <b>×${o.qty}</b></span>`).join('')}</div>
           ${s.decoys.length ? `<div class="trap">함정: ${s.decoys.map(d => esc(items[d].name)).join(', ')} (말만 하고 안 시킴)</div>` : ''}
-          <audio controls preload="none" src="songs/${esc(s.id)}.mp3" onerror="this.outerHTML='<div class=nosong>노래 아직 없음</div>'"></audio>
+          <audio controls preload="none" src="songs/${esc(s.id)}.mp3${ver[s.id] ? `?v=${ver[s.id].slice(0, 8)}` : ''}" onerror="this.outerHTML='<div class=nosong>노래 아직 없음</div>'"></audio>
           <div class="lyr">${s.parts.filter(p => p.lines.length).map(p =>
             `<p class="tag" style="color:${CHAR[p.who].color}">[${esc(p.part)}] ${CHAR[p.who].name}</p>` + p.lines.map(l => `<p>${hi(l)}</p>`).join('')).join('')}</div>
         </article>`;
       }).join('');
     };
     const count = lv => songs.filter(s => s.level === lv).length;
-    const opts = [['all', '전체 24'], ['coco', '코코 6'], ['lovey', '러비 6'], ['rou', '루 6'], ['duo', '둘이 6'], ['보통', `보통 ${count('보통')}`], ['어려움', `어려움 ${count('어려움')}`]];
+    const solo = id => songs.filter(s => s.customers.length === 1 && s.customers[0] === id).length;
+    document.getElementById('songsTitle').textContent = `주문 랩 ${songs.length}곡`;
+    const opts = [['all', `전체 ${songs.length}`], ['coco', `코코 ${solo('coco')}`], ['lovey', `러비 ${solo('lovey')}`], ['rou', `루 ${solo('rou')}`], ['duo', `둘이 ${songs.filter(s => s.customers.length > 1).length}`], ['보통', `보통 ${count('보통')}`], ['어려움', `어려움 ${count('어려움')}`]];
     const box = document.getElementById('filters');
     box.innerHTML = opts.map(([k, l]) => `<button type="button" data-k="${k}">${l}</button>`).join('');
     const pick = k => { for (const b of box.children) b.classList.toggle('on', b.dataset.k === k); render(k); };

@@ -1,8 +1,10 @@
-// Show me the burger 수다 — 포스기에서 "주문 완료"를 누르면 손님 봇이 Hermes로 디스코드에서 한마디 한다.
-//   완벽: 기뻐함 / 아슬아슬(다시 듣고 맞힘): 놀리듯 / 틀림: 뭐가 틀렸는지 집어서 따짐 / 시간 초과: 기다리다 지쳐서 나감
+// Show me the burger 수다 — 포스기에서 "주문 완료"를 누르면 손님 봇이 Hermes로 한마디 하고, 그 목소리가 웹에서 나온다.
+//   완벽: 기뻐함 / 아슬아슬(다시 듣고 맞힘): 놀리듯 / 틀림: 뭐가 틀렸는지 집어서 따짐
 //   한마디는 짧게(12자 안팎), 손님이 둘이어도 첫 손님 한 명만. 화면은 그 목소리가 끝날 때까지 다음 손님을 막는다.
-// 디스코드가 없거나 봇 수다를 끄면 정해 둔 짧은 대사를 말풍선으로만 띄운다.
-import { readFileSync } from 'node:fs';
+//   대사: 그 봇의 Hermes 게이트웨이 API(디스코드를 거치지 않음, 봇 Soul 그대로) → 목소리: 그 봇의 ElevenLabs 목소리 → 그 사람 화면에만.
+//   Hermes가 꺼져 있으면 정해 둔 짧은 대사, 목소리를 못 만들면 말풍선만.
+// 디스코드는 되묻기(ask)에만 쓴다: 친구가 음성·채팅으로 물으면 손님 봇이 디스코드에서 대답.
+import { existsSync, readFileSync } from 'node:fs';
 
 const FALLBACK = {
   perfect: { coco: '완벽해애!', lovey: '역시 잘하네.', rou: '타이밍 완벽!' },
@@ -11,7 +13,7 @@ const FALLBACK = {
   timeout: { coco: '심심해! 간다!', lovey: '나 간다.', rou: '늦었어, 간다!' },
 };
 
-export function attachBurger({ referee, root }) {
+export function attachBurger({ referee, root, env = process.env, ttsModel = 'eleven_v4' }) {
   const menu = JSON.parse(readFileSync(`${root}burger/menu.json`, 'utf8'));
   const items = Object.values(menu).flat();
   const byKey = new Map(items.flatMap(m => [[m.id, m], [m.name, m]]));   // id나 메뉴 이름 둘 다 받음
@@ -19,7 +21,45 @@ export function attachBurger({ referee, root }) {
   const name = id => referee.bots.find(b => b.id === id)?.name ?? id;
   const boss = () => referee.callName;
   const talking = () => referee.enabled && !!referee.discord;
-  let busyUntil = 0;
+  const bots = new Map(referee.bots.map(b => [b.id, b]));
+
+  // 봇 게이트웨이 API 열쇠 (scripts/setup-hermes.js가 hermes-home/profiles/<봇>/.env에 넣어 둠)
+  const keys = new Map();
+  function apiKey(id) {
+    if (!keys.has(id)) {
+      const f = `${root}hermes-home/profiles/${id}/.env`;
+      keys.set(id, existsSync(f) ? readFileSync(f, 'utf8').match(/^API_SERVER_KEY=(.+)$/m)?.[1]?.trim() || null : null);
+    }
+    return keys.get(id);
+  }
+  // 그 봇의 Hermes(Soul)에게 디스코드를 거치지 않고 바로 한마디를 받는다. 실패하면 null.
+  async function hermesLine(id, prompt) {
+    const port = bots.get(id)?.apiPort, key = apiKey(id);
+    if (!port || !key) return null;
+    try {
+      const r = await fetch(`http://127.0.0.1:${port}/v1/chat/completions`, {
+        method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'hermes', messages: [{ role: 'user', content: prompt }] }), signal: AbortSignal.timeout(15000),
+      });
+      if (!r.ok) return null;
+      const line = String((await r.json()).choices?.[0]?.message?.content || '').split('\n').map(t => t.trim()).find(Boolean);
+      return line ? line.replace(/^["'“”「『]+|["'“”」』]+$/g, '').slice(0, 60) : null;
+    } catch { return null; }
+  }
+  // 그 봇의 ElevenLabs 목소리로 읽은 mp3. 실패하면 null (화면은 말풍선만)
+  async function voiceOf(id, text) {
+    const voice = bots.get(id)?.elevenlabsVoice, key = env.ELEVENLABS_API_KEY;
+    if (!voice || !key) return null;
+    try {
+      const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_128`, {
+        method: 'POST', headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, model_id: ttsModel }), signal: AbortSignal.timeout(15000),
+      });
+      if (!r.ok) { console.log(`[버거] 목소리 못 만듦 ${r.status} ${(await r.text()).slice(0, 120)}`); return null; }
+      return Buffer.from(await r.arrayBuffer());
+    } catch { return null; }
+  }
+  const shown = t => t.replace(/\[[^\]]*\]\s*/g, '').trim();   // 말풍선에는 목소리 감정 표시([laughs] 등)를 뺀다
 
   // [{item, qty}] → Map(id → 개수). 메뉴에 없는 건 버린다.
   function count(list) {
@@ -77,20 +117,12 @@ export function attachBurger({ referee, root }) {
   }
 
   // verdict: perfect | close | wrong (timeout은 예전 시간 제한용). 손님 한 명만, 짧은 한마디.
-  // onDone: 그 한마디가 디스코드에서 다 끝났을 때(목소리가 끝남) 부른다. 못 듣게 되면 최대 20초 뒤에.
-  // 디스코드로 말하게 했으면 { spoken: true, speaker } 를 돌려준다.
-  function react({ customers, verdict, orderText, missing = [], wrong = [], extra = [], onDone = () => {} }) {
+  // onLine({ who, text, audio }): 대사와 목소리(mp3 Buffer, 못 만들면 null)가 준비되면 부른다. 화면이 틀고, 끝나면 다음 손님을 연다.
+  function react({ customers, verdict, orderText, missing = [], wrong = [], extra = [], onLine = () => {} }) {
     const who = [...new Set(Array.isArray(customers) ? customers : [])].filter(id => botIds.has(id));
     const id = who[0];
-    let finished = false;
-    const finish = () => { if (!finished) { finished = true; setTimeout(onDone, 50); } };   // 주문 완료 답보다 먼저 가지 않게
-    if (!id || !FALLBACK[verdict] || Date.now() < busyUntil) { finish(); return { spoken: false, speaker: id || null }; }   // 여러 명이 동시에 하면 건너뜀
-    busyUntil = Date.now() + 4000;
+    if (!id || !FALLBACK[verdict]) return { speaker: null };
     console.log(`[버거] 주문 완료: ${verdict} (${name(id)})`);
-    if (!talking()) {
-      setTimeout(() => { referee.io.emit('say', { id, text: FALLBACK[verdict][id] }); setTimeout(finish, 2500); }, 300);
-      return { spoken: false, speaker: id };
-    }
     const friend = who.length > 1 ? ` 너는 ${name(who[1])}랑 같이 왔어.` : '';
     const intro = `[버거] 버거집 게임 중. ${boss()}가 점원이고 너는 손님.${friend}`;
     let ask;
@@ -101,9 +133,15 @@ export function attachBurger({ referee, root }) {
       const first = missing[0] ? `${missing[0]}(빠뜨림)` : wrong[0] ? wrong[0].replace(/\(.*\)/, '(개수 틀림)') : extra[0] ? `${extra[0]}(안 시킴)` : '';
       ask = `${boss()}가 주문을 틀리게 찍었어${first ? `. 틀린 것: ${first}` : ''}. 짧게 따지고 가게를 나가며 한마디.`;
     }
-    const text = `${intro} ${ask} 12자 안팎, 짧게 한마디만.`;
-    callAndWait(id, text, finish);
-    return { spoken: true, speaker: id };
+    const prompt = `${intro} ${ask} 12자 안팎, 짧게 한마디만. 따옴표나 설명 없이 대사만 써.`;
+    (async () => {
+      const t = Date.now();
+      const text = await hermesLine(id, prompt) || FALLBACK[verdict][id];
+      const audio = await voiceOf(id, text);
+      console.log(`[버거] ${name(id)} 한마디 (${((Date.now() - t) / 1000).toFixed(1)}초${audio ? '' : ', 목소리 없음'}): ${text}`);
+      onLine({ who: id, text: shown(text), audio });
+    })();
+    return { speaker: id };
   }
 
   // 디스코드로 되묻기: 친구가 음성이나 채팅으로 주문을 되물으면, 손님이 진짜 주문을 보고 맞는지 짧게 알려 준다.
@@ -124,7 +162,7 @@ export function attachBurger({ referee, root }) {
   function orderDone({ customers, answer, entered } = {}) {
     const r = compare(answer, entered);
     if (!r.orderText) return null;
-    react({ customers, verdict: r.ok ? 'perfect' : 'wrong', ...r });
+    react({ customers, verdict: r.ok ? 'perfect' : 'wrong', ...r, onLine: ({ who, text }) => referee.io.emit('say', { id: who, text }) });
     return { ok: r.ok, missing: r.missing, wrong: r.wrong, extra: r.extra };
   }
 

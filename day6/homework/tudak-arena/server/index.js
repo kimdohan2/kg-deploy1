@@ -21,6 +21,7 @@ const PORT = Number(process.env.GAME_PORT) || 3300;
 
 const app = express();
 app.use(express.static(`${root}public`));
+app.use('/burger-clips', express.static(`${root}clips`));   // Show me the burger: 손님 감탄사(주문 끝·재촉)를 웹에서 튼다
 app.get('/api/config', (req, res) => res.json({
   R0, PR,
   player: characters.player,
@@ -33,7 +34,7 @@ const game = new Game(characters.bots);
 const voice = new VoiceFloor(refereeCfg.voiceFloor);
 const clips = new ClipBoard({ root, ...refereeCfg.clips });
 const referee = new Referee({ game, bots: characters.bots, player: characters.player, cfg: refereeCfg, env: process.env, io, voice, clips });
-const burger = attachBurger({ referee, root });   // Show me the burger: 주문 완료 → 손님 봇 한마디
+const burger = attachBurger({ referee, root, env: process.env, ttsModel: characters.tts?.elevenlabsModel });   // Show me the burger: 주문 완료 → 손님 봇 한마디(웹 목소리)
 const shop = new BurgerShop({ root, talk: burger });   // 사람마다 따로 한 판 (/burger/)
 
 // 조작은 먼저 들어온 한 명만, 나머지는 관전
@@ -64,18 +65,13 @@ io.on('connection', socket => {
   socket.on('burger_next', (_, ack) => reply(ack, shop.next(socket.id)));
   socket.on('burger_play', (_, ack) => reply(ack, shop.play(socket.id)));
   socket.on('burger_replay', (_, ack) => reply(ack, shop.replay(socket.id)));
-  // 주문 완료: 채점 → 손님 한 명이 디스코드에서 짧게 한마디 → 그 목소리가 끝나면 화면에 알려서 다음 손님을 연다
-  socket.on('burger_submit', (data, ack) => reply(ack, shop.submit(socket.id, data, () => socket.emit('burger_reacted'))));
-  // 랩(주문)이 끝남: 디스코드 음성방에서만 "주문 끝~" 감탄사 (미리 만든 소리라 크레딧 안 듦)
-  socket.on('burger_rap_end', () => {
-    const bot = shop.rapEnd(socket.id);
-    if (bot && referee.enabled) clips.play(bot, 'ordered');
-  });
-  // 랩이 끝나고 한참 안 찍으면: 손님마다 20% 확률로 디스코드에서만 재촉 한마디 (미리 만든 소리)
-  socket.on('burger_hurry', () => {
-    const bot = shop.hurry(socket.id);
-    if (bot && referee.enabled) clips.play(bot, 'hurry');
-  });
+  // 주문 완료: 채점 → 손님 한 명이 Hermes로 짧게 한마디 → 그 목소리(mp3)를 이 사람 화면에만 보낸다. 화면은 다 들으면 다음 손님을 연다
+  socket.on('burger_submit', (data, ack) => reply(ack, shop.submit(socket.id, data, line => socket.emit('burger_voice', line))));
+  // 랩(주문)이 끝남: 손님이 웹에서 "주문 끝~" 감탄사 (미리 만든 소리라 크레딧 안 듦)
+  const clipTo = (bot, kind) => { const c = bot && clips.pick(bot, kind); if (c) socket.emit('burger_clip', { who: bot, ...c }); };
+  socket.on('burger_rap_end', () => clipTo(shop.rapEnd(socket.id), 'ordered'));
+  // 랩이 끝나고 한참 안 찍으면: 손님마다 20% 확률로 웹에서 재촉 한마디 (미리 만든 소리)
+  socket.on('burger_hurry', () => clipTo(shop.hurry(socket.id), 'hurry'));
   // 시험 화면(/order-test/): 정답과 찍은 것을 받아서 비교하고 손님 봇이 한마디
   socket.on('burger_done', (data, ack) => reply(ack, burger.orderDone(data)));
 

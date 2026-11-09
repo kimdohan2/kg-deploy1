@@ -1,9 +1,11 @@
 // 투닥버거 주문 랩(burger/songs.json)을 ElevenLabs Music으로 만들어 public/burger/songs/<곡>.mp3로 저장한다.
 // 한 번에 2곡(ElevenLabs 동시 요청 한도), 이미 있는 곡은 건너뜀. 다시 만들려면 그 mp3를 지우고 실행.
 // 사용법: npm run burger-songs [곡 id...]   예) npm run burger-songs duo-4 duo-5
-// 20초 곡 하나에 약 250크레딧. .env의 ELEVENLABS_API_KEY에 Music Generation 권한이 있어야 함.
+// 20초 곡 하나에 약 250크레딧. 만든 뒤 곡 끝에 소리가 서서히 줄어드는 꼬리를 붙인다(burger-fade.js).
+// .env의 ELEVENLABS_API_KEY에 Music Generation 권한이 있어야 함.
 import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { fadeSong } from './burger-fade.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const only = process.argv.slice(2);
@@ -17,7 +19,9 @@ mkdirSync(outDir, { recursive: true });
 // 둘이 부르는 곡은 비트 하나로 끝까지 (목소리만 바뀜)
 const DUO_BEAT = {
   '드릴 배틀': ['UK drill', '142 bpm', 'sliding 808', 'dark piano'],
-  '트랩': genreStyles.lovey.beat,
+  '파티 배틀': ['upbeat bouncy trap', '150 bpm', 'bright brass and synth stabs', 'bouncy 808', 'playful back-and-forth rap battle'],
+  '트랩': ['trap', '140 bpm', 'dark synth bells', 'heavy 808'],
+  '파티 트랩': genreStyles.lovey.beat,
   '하이퍼 + 붐뱁': ['hip hop', '110 bpm', 'punchy boom bap drums', 'glitchy synth stabs'],
   '붐뱁 + 하이퍼': ['hip hop', '110 bpm', 'punchy boom bap drums', 'glitchy synth stabs'],
 };
@@ -31,13 +35,13 @@ function spec(s) {
       return { text: `[${p.part}]\n{instrumental intro}`, duration_ms: p.ms, positive_styles: [...beat, 'instrumental intro'], negative_styles: ['vocals'] };
     }
     let voice = [...genreStyles[p.who].voice];
-    if (bothMale && p.who === s.customers[1]) voice[0] = 'different young male rapper with a deeper calmer voice';
+    if (bothMale && p.who === s.customers[1]) voice[0] = 'different young male rapper with a deeper voice';
     const hook = p.part === 'Hook';
     return {
       text: `[${p.part}]\n${p.lines.join('\n')}`,
       duration_ms: p.ms,
       positive_styles: [...beat, hook ? 'catchy rap hook' : 'rap verse', ...voice],
-      negative_styles: [FEMALE.has(p.who) ? 'male vocals' : 'female vocals', 'mumbling'],
+      negative_styles: [FEMALE.has(p.who) ? 'male vocals' : 'female vocals', 'mumbling', ...(genreStyles[p.who].avoid || [])],
     };
   });
   return { model_id: 'music_v2_5', composition_plan: { chunks } };
@@ -69,6 +73,7 @@ async function make(s) {
     if (r.ok) {
       writeFileSync(`${file}.part`, Buffer.from(await r.arrayBuffer()));
       renameSync(`${file}.part`, file);
+      fadeSong(s.id);   // 끝이 툭 끊기지 않게 (scripts/burger-fade.js)
       console.log(`✓ ${s.id} (${((Date.now() - t) / 1000).toFixed(0)}초 걸림)`);
       done.push(s.id);
       return;

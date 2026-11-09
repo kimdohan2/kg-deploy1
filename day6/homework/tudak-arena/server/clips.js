@@ -1,9 +1,11 @@
 // 즉시 감탄사. 게임 사건이 나면 그 봇에게 미리 만든 짧은 소리(npm run clips)를 보낸다.
 // 봇(Hermes 패치)은 /clips/next로 기다리고 있다가 받자마자 차례 맨 앞에서 튼다. Claude를 거치지 않아 0.5초 안팎.
 import { existsSync, readFileSync } from 'node:fs';
+import { relative, sep } from 'node:path';
 
 export class ClipBoard {
   constructor({ root, cooldownMs = 1500, freshMs = 1500, waitMs = 20000 }) {
+    this.dir = `${root}clips`;
     const path = `${root}clips/manifest.json`;
     const manifest = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
     this.clips = manifest.bots || {};
@@ -37,6 +39,14 @@ export class ClipBoard {
       this.pending.set(bot, { clip, at: now });
     }
     return this.texts[clip] || '';
+  }
+
+  // 웹(Show me the burger)에서 틀 감탄사 하나 고르기: 디스코드로는 안 보내고 { src(웹 주소), text }만 돌려준다
+  pick(bot, kind) {
+    const list = (this.clips[bot]?.[kind] || []).filter(existsSync);
+    if (!list.length) return null;
+    const clip = list[Math.floor(Math.random() * list.length)];
+    return { src: `/burger-clips/${relative(this.dir, clip).split(sep).join('/')}`, text: this.texts[clip] || '' };
   }
 
   // 봇이 "내 감탄사 있어?" 하고 기다린다. 있으면 바로, 없으면 생길 때까지(최대 waitMs) 기다렸다 답한다.

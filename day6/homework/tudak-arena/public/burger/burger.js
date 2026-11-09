@@ -5,14 +5,20 @@ const socket = io();
 const $ = id => document.getElementById(id);
 const cv = $('c');
 const ctx = cv.getContext('2d');
-const W = cv.width, H = cv.height;
+let W = cv.width;            // 무대 가로: 화면 비율에 맞춰 fit()이 바꾼다 (세로 H는 864 고정)
+const H = cv.height;
 
 // ── 무대 ──
-const BG_Y = -60;          // 배경(1536×1024)을 위로 60 올려서 16:9로 자름
+const BG_Y = -60;          // 배경(3072×1024)을 위로 60 올려서 높이 864로 자름
+const BG_W = 3072;         // 배경 가로 (양옆을 이어 그린 넓은 그림)
+const SCENE_X = 1700;      // 배경에서 손님이 서는 가운데 (케첩·냅킨과 포스기 사이)
+const MIN_A = 16 / 9, MAX_A = 3.5;   // 무대 가로세로 비율: 화면이 넓으면 이 안에서 옆으로 넓어진다
 const COUNTER = 690;       // 계산대 윗선 (이 아래로는 손님을 안 그림)
 const BOTTOM = 742;        // 손님 그림 아래 끝
 const SIZE = 600;          // 손님 그림 크기 (원본 640)
-const SPOTS = { 1: [768], 2: [560, 980] };
+const SPOTS = { 1: [0], 2: [-208, 212] };   // 가운데(SCENE_X)에서 떨어진 거리
+const bgX = () => clamp(W / 2 - SCENE_X, W - BG_W, 0);   // 손님 자리가 무대 가운데 오게, 배경 끝은 안 보이게
+const ax = a => SCENE_X + bgX() + a.off;                  // 손님이 무대에서 서는 x
 // 손님 그림(640)에서 입 위치: 입 벌린 그림을 이 타원 안만 덧그린다
 const MOUTH = { coco: { x: 319, y: 289, rx: 57, ry: 40 }, lovey: { x: 327, y: 263, rx: 50, ry: 40 }, rou: { x: 316, y: 252, rx: 50, ry: 40 } };
 const NAMES = { coco: '코코', lovey: '러비', rou: '루' };
@@ -34,12 +40,13 @@ let song = null, actors = [], vocal = [];
 let order = new Map();       // 메뉴 id → 개수 (넣은 순서 유지)
 let replaysLeft = 1, afterAt = 0, awaitUntil = 0, progress = [], teamNo = 0, teams = 3;
 let greetings = {}, greeter = null, lastGreet = {}, speaker = null, hurrySent = false;
+let talker = null, voiceUrl = null;   // 지금 말하는 손님 (인사말·감탄사·주문 완료 한마디)
 let maxAsks = 3, asksLeft = 3, askWaiting = false, askWho = null;   // 디스코드로 손님에게 되묻기
 const HURRY_AFTER_MS = 20000;   // 랩이 끝나고 이만큼 안 찍으면 가끔 손님이 재촉 (확률은 서버가)
 
 // ── 소리 ──
 const audio = new Audio();
-const greetAudio = new Audio();   // 손님 인사말 (봇 목소리)
+const greetAudio = new Audio();   // 손님 목소리 (인사말·감탄사·주문 완료 한마디) — 랩과 따로, 입 움직임에 씀
 let ac = null, analyser = null, level = 0, slow = 0, mouthOpen = false, mouthSince = 0;
 const freq = new Uint8Array(512);
 function setupAudio() {
@@ -61,7 +68,24 @@ function voiceLevel() {
   return sum / n / 255;
 }
 const rapping = () => !audio.paused && !audio.ended && (state === 'rap');
-const greeting = () => !greetAudio.paused && !greetAudio.ended && state === 'greet';
+const talking = () => !!talker && !greetAudio.paused && !greetAudio.ended;
+
+// 손님 목소리 틀기: 한 번에 하나만 (새로 틀면 앞의 것은 멈춤). 끝나거나 못 틀면 onEnd
+function playVoice(who, src, onEnd = () => {}) {
+  greetAudio.onended = greetAudio.onerror = null;
+  greetAudio.pause();
+  talker = who;
+  let ended = false;
+  const end = () => { if (ended) return; ended = true; if (talker === who) talker = null; onEnd(); };
+  greetAudio.onended = greetAudio.onerror = end;
+  greetAudio.src = src;
+  greetAudio.play().catch(end);
+}
+function stopVoice() {
+  greetAudio.onended = greetAudio.onerror = null;
+  greetAudio.pause();
+  talker = null;
+}
 
 // ── 효과음 (파일 없이 합성, 랩 소리와 따로 나가서 입 움직임에는 안 섞임) ──
 function tone(freq, dur, { type = 'sine', vol = 0.1, to = null, at = 0 } = {}) {
@@ -168,7 +192,7 @@ function drawActor(a, now, t, at) {
   ctx.beginPath();
   ctx.rect(0, 0, W, COUNTER);
   ctx.clip();
-  ctx.translate(a.cx + dx, BOTTOM + dy);
+  ctx.translate(ax(a) + dx, BOTTOM + dy);
   ctx.rotate(rot);
   ctx.scale(1, sy);
   ctx.drawImage(face, -SIZE / 2, -SIZE, SIZE, SIZE);
@@ -178,15 +202,15 @@ function drawActor(a, now, t, at) {
 
 function draw(now) {
   const t = now / 1000;
-  ctx.drawImage(img.bg, 0, BG_Y);
+  ctx.drawImage(img.bg, bgX(), BG_Y);
   const raw = voiceLevel();
   level += (raw - level) * 0.5;      // 빠르게 따라감
   slow += (raw - slow) * 0.06;       // 천천히 따라감 (비트가 깔린 평균)
   const at = audio.currentTime || 0;
   // 입: 랩 구간에서 소리가 평균보다 툭 커질 때 열고, 열리면 최소 0.07초·닫히면 최소 0.05초 유지
   //     인사말(음악 없음)은 소리 크기가 고르게 높아서, 소리가 나는 동안 0.24초 주기로 뻐끔뻐끔 (쉴 때는 닫힘)
-  speaker = greeting() ? greeter : rapping() ? whoAt(at) : null;
-  const want = !!speaker && (greeting() ? level > 0.12 && Math.sin(now / 38) > -0.2 : level > slow * 1.04);
+  speaker = talking() ? talker : rapping() ? whoAt(at) : null;
+  const want = !!speaker && (talking() ? level > 0.12 && Math.sin(now / 38) > -0.2 : level > slow * 1.04);
   if (want !== mouthOpen && now - mouthSince > (mouthOpen ? 70 : 50)) { mouthOpen = want; mouthSince = now; }
   for (const a of actors) drawActor(a, now, t, at);
   tickAfter(now);
@@ -268,7 +292,7 @@ function showCustomer(res) {
   }
   const spots = SPOTS[song.customers.length];
   const now = performance.now();
-  actors = song.customers.map((id, i) => ({ id, cx: spots[i], side: i ? 1 : -1, enterAt: now + i * 180, leaveAt: 0, mood: null, moodAt: 0, phase: i * 1.7 }));
+  actors = song.customers.map((id, i) => ({ id, off: spots[i], side: i ? 1 : -1, enterAt: now + i * 180, leaveAt: 0, mood: null, moodAt: 0, phase: i * 1.7 }));
   state = 'enter';
   updateUI();
   SFX.door();
@@ -291,16 +315,14 @@ function greet() {
   if (!line) return done();
   lastGreet[greeter] = line.text;
   showBubble(greeter, line.text, 0);
-  greetAudio.src = line.file;
-  greetAudio.onended = done;
-  greetAudio.play().catch(() => setTimeout(done, 1500));
+  playVoice(greeter, line.file, done);
   setTimeout(done, 6000);   // 소리가 안 끝나도 6초 뒤엔 버튼
 }
 
 // 주문 시작 → 랩 틀기 (시간 제한은 서버가 이때부터 잼)
 $('startRap').onclick = async () => {
   if (state !== 'ready' && state !== 'greet') return;
-  greetAudio.pause();
+  stopVoice();
   $('bubbles').innerHTML = '';
   state = 'rap';
   updateUI();
@@ -322,6 +344,7 @@ $('replay').onclick = async () => {
   const r = await emit('burger_replay');
   if (!r?.ok) return;
   replaysLeft = 0;
+  stopVoice();
   state = 'rap';
   updateUI();
   SFX.rewind();
@@ -334,6 +357,7 @@ async function submit() {
   if (submitting || !canOrder()) return;
   submitting = true;
   audio.pause();
+  stopVoice();
   state = 'result';
   updateUI();
   SFX.print();
@@ -372,14 +396,14 @@ function showReceipt(res) {
       <button type="button" class="next" id="next">${res.last ? '영업 결과 보기 ▶' : '다음 손님 ▶'}</button></div>
     <table class="compare"><tr><th>메뉴</th><th>주문</th><th>내가 찍음</th><th></th></tr>${rows}</table>
     <div class="lyrics">${lyrics}</div>
-    <p class="hint">${res.spoken ? '손님 반응은 디스코드 음성방에서 들려요.' : ''}</p>`;
+    <p class="hint"></p>`;
   box.hidden = false;
   $('next').onclick = nextCustomer;
   lockNext(res.speaker);
 }
 
-// 손님 한마디가 디스코드에서 끝날 때까지 "다음 손님"을 잠근다.
-//   풀리는 때: 서버가 목소리 끝을 알려 줌 / 말풍선이 뜨고 말할 시간만큼 지남 / 최대 22초
+// 손님 한마디가 끝날 때까지 "다음 손님"을 잠근다.
+//   풀리는 때: 웹에서 그 목소리가 끝남 / 목소리 없이 말풍선만 왔으면 읽을 시간만큼 지남 / 최대 22초
 let nextLock = null;
 function lockNext(speaker) {
   const btn = $('next');
@@ -396,7 +420,26 @@ function unlockNext() {
   const btn = $('next');
   if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label; }
 }
-socket.on('burger_reacted', unlockNext);
+// 주문 완료 한마디: 서버가 Hermes 대사 + 손님 목소리(mp3)를 보낸다 → 말풍선 + 목소리, 다 들으면 다음 손님 열림
+socket.on('burger_voice', ({ who, text, audio }) => {
+  const a = actors.find(x => x.id === who);
+  if (state !== 'result' || !a) return unlockNext();
+  showBubble(who, text);
+  a.moodAt = performance.now();   // 말할 때 한 번 더 들썩
+  if (voiceUrl) URL.revokeObjectURL(voiceUrl);
+  voiceUrl = null;
+  if (!audio) return void setTimeout(unlockNext, 1200 + text.length * 110);
+  voiceUrl = URL.createObjectURL(new Blob([audio], { type: 'audio/mpeg' }));
+  playVoice(who, voiceUrl, () => setTimeout(unlockNext, 300));
+});
+// 손님 감탄사 (랩이 끝나면 "주문 끝~", 한참 안 찍으면 가끔 재촉): 미리 만든 소리를 웹에서
+socket.on('burger_clip', ({ who, src, text }) => {
+  const a = actors.find(x => x.id === who);
+  if (!a || state !== 'after' || talking()) return;
+  if (text) showBubble(who, text, 3500);
+  a.moodAt = performance.now();
+  playVoice(who, src);
+});
 
 async function nextCustomer() {
   if (state !== 'result') return;
@@ -404,6 +447,7 @@ async function nextCustomer() {
   updateUI();
   const now = performance.now();
   for (const a of actors) a.leaveAt = now;
+  stopVoice();
   $('bubbles').innerHTML = '';
   awaitUntil = 0;
   unlockNext();
@@ -444,18 +488,39 @@ function showBubble(id, text, ms = 9000) {
   if (!a) return;
   const b = document.createElement('div');
   b.className = 'bubble';
-  b.style.left = `${(a.cx / W) * 100}%`;
   b.textContent = text;
   $('bubbles').querySelector(`[data-id="${id}"]`)?.remove();
   b.dataset.id = id;
   $('bubbles').appendChild(b);
-  // 왼쪽 위 손님 이름표와 겹치면 말풍선을 오른쪽으로 비켜 준다
-  const tag = $('who').getBoundingClientRect(), box = b.getBoundingClientRect();
-  if (tag.width && box.left < tag.right + 8 && box.top < tag.bottom) {
-    b.style.left = `calc(${(a.cx / W) * 100}% + ${Math.ceil(tag.right + 8 - box.left)}px)`;
-  }
+  placeBubble(b);
   if (ms) setTimeout(() => b.remove(), ms);
 }
+// 말풍선을 손님 머리 위에 둔다. 왼쪽 위 손님 이름표와 겹치면 오른쪽으로 비켜 준다
+function placeBubble(b) {
+  const a = actors.find(x => x.id === b.dataset.id);
+  if (!a) return;
+  const at = `${(ax(a) / W) * 100}%`;
+  b.style.left = at;
+  const tag = $('who').getBoundingClientRect(), box = b.getBoundingClientRect();
+  if (tag.width && box.left < tag.right + 8 && box.top < tag.bottom) {
+    b.style.left = `calc(${at} + ${Math.ceil(tag.right + 8 - box.left)}px)`;
+  }
+}
+
+// ── 무대 크기: 화면에 맞춰 무대를 키운다 (세로는 그대로 두고 가로를 늘려 배경 양옆을 더 보여 줌) ──
+function fit() {
+  const wrap = $('stageWrap'), stage = $('stage');
+  const bw = wrap.clientWidth, bh = wrap.clientHeight;
+  if (!bw || !bh) return;
+  const a = clamp(bw / bh, MIN_A, MAX_A);
+  const w = Math.min(bw, bh * a);
+  stage.style.width = `${w}px`;
+  stage.style.height = `${w / a}px`;
+  const cw = Math.round(H * a);
+  if (cw !== W) cv.width = W = cw;
+  for (const b of $('bubbles').children) placeBubble(b);
+}
+new ResizeObserver(fit).observe($('stageWrap'));
 socket.on('say', ({ id, text }) => {
   const a = actors.find(x => x.id === id);
   if (!a || Date.now() > awaitUntil) return;
@@ -505,7 +570,7 @@ let connectedOnce = false;
 socket.on('connect', () => {
   if (connectedOnce && !['start', 'end'].includes(state)) {
     audio.pause();
-    greetAudio.pause();
+    stopVoice();
     state = 'end';
     actors = [];
     order.clear();
@@ -533,7 +598,7 @@ socket.on('status', s => {
 fetch('data/greetings.json').then(r => r.json()).then(g => { greetings = g; }).catch(() => {});
 Promise.all([
   fetch('data/menu.json').then(r => r.json()),
-  ...['bg.jpg', ...['coco', 'lovey', 'rou'].flatMap(id => ['base', 'mouth', 'happy', 'angry'].map(s => `${id}-${s}.png`))].map(f => load(`img/${f}`)),
+  ...['bg-wide.jpg', ...['coco', 'lovey', 'rou'].flatMap(id => ['base', 'mouth', 'happy', 'angry'].map(s => `${id}-${s}.png`))].map(f => load(`img/${f}`)),
 ]).then(([m, bg, ...faces]) => {
   menu = m;
   items = Object.fromEntries(Object.values(m).flat().map(x => [x.id, x]));

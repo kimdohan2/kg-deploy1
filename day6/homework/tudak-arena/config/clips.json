@@ -7,8 +7,8 @@
     "hit": "세게 부딪혔지만 버팀",
     "win": "우승",
     "lose": "사람 친구가 우승",
-    "ordered": "Show me the burger: 손님이 랩 주문을 다 끝냈을 때 (디스코드에서만)",
-    "hurry": "Show me the burger: 랩이 끝나고 5초 남았을 때 재촉 (손님마다 20%, 디스코드에서만)"
+    "ordered": "Show me the burger: 손님이 랩 주문을 다 끝냈을 때 (웹 화면에서 틂)",
+    "hurry": "Show me the burger: 랩이 끝나고 한참(20초) 안 찍을 때 재촉 (손님마다 20%, 웹 화면에서 틂)"
   },
   "coco": {
     "out": [

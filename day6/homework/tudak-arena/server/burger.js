@@ -2,29 +2,31 @@
 // 사이트에 들어온 사람(소켓)마다 따로 한 판(손님 3팀)을 진행한다.
 // 정답(주문·가사)은 서버만 갖고 있다가 주문 완료 뒤에 알려 준다.
 // 랩이 끝난 뒤에는 시간 제한이 없고, 디스코드(음성·채팅)에서 손님에게 주문을 3번까지 되물을 수 있다.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 export const TEAMS = 3;          // 한 판 손님 수
 export const MAX_ASKS = 3;       // 손님마다 디스코드로 되물을 수 있는 횟수
-const HARD_RATE = 0.4;           // 보통 60 · 어려움 40
+const LEVELS = ['보통', '어려움', '어려움'];   // 한 판 손님 순서: 보통으로 몸 풀고 어려움 둘
 const HURRY_RATE = 0.2;          // 랩이 끝나고 한참 안 찍을 때 재촉 한마디가 나올 확률 (손님마다)
-const BPM = { '하이퍼 트랩': 155, '트랩': 140, '붐뱁': 90, '드릴 배틀': 142, '하이퍼 + 붐뱁': 110, '붐뱁 + 하이퍼': 110 };
+const BPM = { '하이퍼 트랩': 155, '파티 트랩': 160, '펑키 힙합': 118, '트랩': 140, '붐뱁': 90, '드릴 배틀': 142, '파티 배틀': 150, '하이퍼 + 붐뱁': 110, '붐뱁 + 하이퍼': 110 };
 
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const NAMES = { coco: ['코코'], lovey: ['러비'], rou: ['루', 'Rou', '로우'] };   // 디스코드에서 손님을 부를 때
 
 export class BurgerShop {
   constructor({ root, talk }) {
-    this.songs = JSON.parse(readFileSync(`${root}burger/songs.json`, 'utf8')).songs;
+    // 음악(mp3)을 아직 안 만든 곡은 빼고 고른다 (가사만 먼저 써 둔 곡)
+    this.songs = JSON.parse(readFileSync(`${root}burger/songs.json`, 'utf8')).songs
+      .filter(s => existsSync(`${root}public/burger/songs/${s.id}.mp3`));
     this.talk = talk;
     this.shifts = new Map();   // 소켓 id → 한 판
   }
 
-  // 손님 3팀 고르기: 팀마다 40% 확률로 어려움, 한 판 안에서 같은 곡 없음, 바로 앞 손님과 같은 얼굴 조합은 되도록 피함
+  // 손님 3팀 고르기: 보통 1 → 어려움 2, 한 판 안에서 같은 곡 없음, 바로 앞 손님과 같은 얼굴 조합은 되도록 피함
   pickSongs() {
     const out = [];
     for (let i = 0; i < TEAMS; i++) {
-      const level = Math.random() < HARD_RATE ? '어려움' : '보통';
+      const level = LEVELS[i] || '어려움';
       const unused = this.songs.filter(s => !out.includes(s));
       let pool = unused.filter(s => s.level === level);
       const prev = out[out.length - 1]?.customers.join();
@@ -55,7 +57,7 @@ export class BurgerShop {
     return {
       type: 'customer', n: sh.i + 1, of: TEAMS, maxAsks: MAX_ASKS,
       song: {
-        id: s.id, customers: s.customers, genre: s.genre, level: s.level, bpm: BPM[s.genre] || 120,
+        id: s.id, customers: s.customers, genre: s.genre, level: s.level, bpm: s.bpm || BPM[s.genre] || 120,
         audio: `songs/${s.id}.mp3`,
         parts: s.parts.map(p => ({ who: p.who, ms: p.ms, vocal: p.lines.length > 0 })),   // 가사는 안 보냄
       },
@@ -79,8 +81,8 @@ export class BurgerShop {
     return { ok: true };
   }
 
-  // 주문 완료 → 채점하고 손님 봇이 한마디
-  submit(sid, { entered } = {}, onReacted = () => {}) {
+  // 주문 완료 → 채점하고 손님 봇이 한마디 (onLine: 대사·목소리가 준비되면 그 사람 화면으로)
+  submit(sid, { entered } = {}, onLine = () => {}) {
     const sh = this.shifts.get(sid);
     const cur = sh?.cur;
     if (!cur || cur.done) return null;
@@ -89,15 +91,15 @@ export class BurgerShop {
     const r = this.talk.compare(s.order, entered);
     const verdict = !r.ok ? 'wrong' : cur.replays ? 'close' : 'perfect';
     sh.results.push({ customers: s.customers, level: s.level, verdict });
-    const { spoken, speaker } = this.talk.react({ customers: s.customers, verdict, ...r, onDone: onReacted });
+    const { speaker } = this.talk.react({ customers: s.customers, verdict, ...r, onLine });
     return {
-      verdict, spoken, speaker, last: sh.i + 1 >= TEAMS,
+      verdict, speaker, last: sh.i + 1 >= TEAMS,
       answer: r.want, entered: r.got, missing: r.missing, wrong: r.wrong, extra: r.extra,
       decoys: s.decoys, lyrics: s.parts.filter(p => p.lines.length).map(p => ({ who: p.who, part: p.part, lines: p.lines })),
     };
   }
 
-  // 랩(주문)이 처음 끝났을 때: 이때부터 되묻기 가능. "주문 끝" 멘트를 낼 봇을 돌려준다 (다시 듣기 뒤에는 안 함)
+  // 랩(주문)이 처음 끝났을 때: 이때부터 되묻기 가능. "주문 끝" 소리를 낼 봇을 돌려준다 (다시 듣기 뒤에는 안 함)
   rapEnd(sid) {
     const cur = this.shifts.get(sid)?.cur;
     if (!cur || cur.done || !cur.started || cur.rapEnded) return null;
