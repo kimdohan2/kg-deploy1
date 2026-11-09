@@ -23,6 +23,8 @@ const dir = `${root}clips`;
 const manifestPath = `${dir}/manifest.json`;
 const old = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : { files: {} };
 const manifest = { model, bots: {}, files: {} };
+// 예전 목록을 'clips/' 뒤 경로로도 찾는다 → clips 폴더를 경로가 다른 노트북으로 복사해 와도 다시 만들지 않음 (크레딧 아낌)
+const oldRel = Object.fromEntries(Object.entries(old.files || {}).map(([f, m]) => [f.slice(f.lastIndexOf('/clips/') + 7), m]));
 let made = 0, kept = 0, credits = 0;
 
 for (const bot of characters.bots) {
@@ -38,7 +40,7 @@ for (const bot of characters.bots) {
       const meta = { text, voice, model };
       manifest.bots[bot.id][kind].push(file);
       manifest.files[file] = meta;
-      if (existsSync(file) && JSON.stringify(old.files[file]) === JSON.stringify(meta)) { kept++; continue; }
+      if (existsSync(file) && JSON.stringify(old.files[file] ?? oldRel[`${bot.id}/${kind}-${i + 1}.mp3`]) === JSON.stringify(meta)) { kept++; continue; }
       const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_128`, {
         method: 'POST',
         headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },

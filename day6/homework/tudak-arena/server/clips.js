@@ -8,10 +8,13 @@ export class ClipBoard {
     this.dir = `${root}clips`;
     const path = `${root}clips/manifest.json`;
     const manifest = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
-    this.clips = manifest.bots || {};
+    // 목록에는 만든 노트북의 전체 경로가 적혀 있다. clips 폴더를 경로가 다른 노트북으로 복사해 와도 찾게 'clips/' 뒤 부분으로 다시 잇는다
+    const here = p => (p.includes('/clips/') ? `${this.dir}/${p.slice(p.lastIndexOf('/clips/') + 7)}` : p);
+    this.clips = Object.fromEntries(Object.entries(manifest.bots || {}).map(([bot, kinds]) =>
+      [bot, Object.fromEntries(Object.entries(kinds).map(([kind, list]) => [kind, list.map(here)]))]));
     // 웹 말풍선에 띄울 글 (감정 표시는 뺌)
     this.texts = Object.fromEntries(Object.entries(manifest.files || {})
-      .map(([file, m]) => [file, m.text.replace(/\[[a-z ]+\]\s*/gi, '').trim()]));
+      .map(([file, m]) => [here(file), m.text.replace(/\[[a-z ]+\]\s*/gi, '').trim()]));
     this.cooldownMs = cooldownMs;   // 한 봇이 감탄사를 너무 연달아 내지 않게
     this.freshMs = freshMs;         // 이보다 오래 못 보낸 감탄사는 늦은 반응이라 버린다
     this.waitMs = waitMs;           // 봇이 한 번 기다리는 최대 시간 (그 뒤 다시 물어봄)

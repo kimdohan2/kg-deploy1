@@ -42,6 +42,7 @@
 - `ANTHROPIC_API_KEY`
 - `DISCORD_TOKEN_COCO`, `DISCORD_TOKEN_LOVEY`, `DISCORD_TOKEN_ROU`, `DISCORD_TOKEN_REFEREE`
 - `DISCORD_OWNER_ID` (내 사용자 ID), `DISCORD_TEXT_CHANNEL_ID` (채팅 채널 ID, 지금은 #bot_text)
+- `ELEVENLABS_API_KEY` (봇 목소리·손님 한마디·음성 듣기·곡 만들기), `TYPESAFE_API_KEY` (Jev 판단), `OPENAI_API_KEY` (그림 만들 때만)
 
 ### 2. Hermes 설치 (이 폴더 안에)
 Hermes는 노트북 전체가 아니라 이 프로젝트 폴더 안에 설치해요. 코드는 `hermes-agent/`, 봇 데이터는 `hermes-home/`에 들어가요(둘 다 git에는 안 올라가요). 터미널에서 `tudak-arena` 폴더로 가서 차례로 실행하세요.
@@ -71,6 +72,9 @@ npm run setup-hermes
 ```
 
 프로필 `coco`, `lovey`, `rou`를 `hermes-home/profiles/` 아래에 각각 만들어요. 각자의 SOUL.md, 디스코드 토큰, 목소리, 모델, **API 포트**를 넣고, 게이트웨이도 봇마다 따로 돌게 설정해요. 여러 번 실행해도 괜찮아요.
+
+### 4. 미리 만든 감탄사 가져오기 (`clips/`)
+봇 목소리로 미리 만든 짧은 소리 72개(주문 끝·재촉·밀치기 감탄사)는 git에 안 올라가요(`clips/`, 약 38MB). **예전 노트북의 `clips` 폴더를 통째로 이 폴더에 복사**하는 게 가장 좋아요(크레딧 0). 폴더 경로가 달라도 알아서 찾아요. 복사할 수 없으면 `npm run clips`로 다시 만들 수 있지만 ElevenLabs 크레딧이 들어요. 복사한 뒤 `npm run clips`를 해도 이미 있는 소리는 다시 만들지 않아요.
 
 ## 놀 때마다 하는 것
 

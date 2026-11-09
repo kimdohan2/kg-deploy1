@@ -27,6 +27,12 @@
 
 ## 지금 상태
 
+### 다른 노트북으로 옮길 준비 (2026-11-09)
+- 사용자: "내일은 이 맥북에서 작업 안 함". main 푸시(ef34c79, 사용자가 직접 GitHub 로그인). 브랜치 day6-hubjipsa·day6-show-me-the-burger·chatbot-test 모두 main에 들어가 있음(main에 없는 커밋 0).
+- `clips/manifest.json`에 만든 노트북의 전체 경로가 적혀 있어서, 경로가 다른 노트북으로 `clips` 폴더를 복사하면 소리를 못 찾던 문제 → `server/clips.js`가 'clips/' 뒤 경로로 항상 이 노트북의 `clips/`를 가리키게, `scripts/clips.js`도 예전 목록을 같은 방식으로 찾아서 복사한 소리를 다시 만들지 않게(크레딧 아낌). 다른 경로로 복사해서 시험함.
+- README 처음 준비에 ElevenLabs·TypeSafe·OpenAI 키와 "4. clips 폴더 복사"를 넣음.
+- 새 노트북에서 git으로 안 오는 것: `.env`(직접 채움), `clips/`(복사 권장), `hermes-agent/`·`hermes-home/`(README 2·3번으로 설치, `npm run setup-hermes`가 Soul·포트·API 열쇠를 새로 만듦).
+
 ### 손님 목소리를 웹에서 (2026-11-09, 사용자 요청)
 - 사용자: "마지막 실패·성공 멘트를 웹에서도 목소리 들리게, 디스코드는 질문하고 답할 때만". **디스코드에는 되묻기(질문·대답)만 남김.**
 - 주문 완료 한마디: `burger-talk.js` `react` → 그 봇의 **Hermes 게이트웨이 API**(`http://127.0.0.1:<apiPort>/v1/chat/completions`, 열쇠는 `hermes-home/profiles/<봇>/.env`의 API_SERVER_KEY, 디스코드 안 거침, Soul 그대로)로 대사 → 그 봇의 **ElevenLabs 목소리**(eleven_v4)로 mp3 → 소켓 `burger_voice {who, text, audio}`로 **그 사람 화면에만**. Hermes가 꺼져 있으면 정해 둔 대사, 목소리 실패면 말풍선만. 말풍선에는 [excited] 같은 감정 표시를 뺌. 여러 명 동시 4초 막기는 없앰(각자 화면이라).
