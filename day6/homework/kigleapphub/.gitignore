@@ -1,5 +1,6 @@
 node_modules/
 .env
 # 노트북마다 따로 설치하는 Hermes 코드와 봇 데이터
-hermes-agent/
+# (hermes-agent는 이미 설치된 Hermes를 가리키는 링크일 수도 있어서 / 없이 씀)
+hermes-agent
 hermes-home/
