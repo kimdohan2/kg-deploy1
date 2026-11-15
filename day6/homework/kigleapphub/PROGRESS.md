@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 갱신: 2026-11-08
+마지막 갱신: 2026-11-10
 
 ## 과제
 "discord + hermes agent로 키글 사람들이 쓰고 싶은 에이전트 만들기". 별도 포트, 이름, 설명, 프로필 사진, Soul.md가 모두 있어야 해요.
@@ -36,6 +36,21 @@
 
 - 19:53 고침: `find_links`에 프로젝트 없이 항목만 주면 모든 프로젝트의 그 항목을 한 번에(`allProjects`, `emptyCount`) 돌려줌. 도구 설명에도 "프로젝트마다 따로 부르지 말고 한 번만". 봇 재시작 후 "각 프로젝트들의 기획서 링크만 알려줘" → 도구 2번(list_projects + find_links), 대답 약 4초(전엔 16번·21초). 기획서는 15개 중 2개만 채워져 있음.
 
+- **2026-11-10 새 노트북(KIGLEui-MacBookPro)으로 옮김**: 이 노트북에는 Hermes·`node_modules`·`.env`가 없었음.
+  - `npm install` 완료(npm이 esbuild·workerd 설치 스크립트를 건너뛰었지만 앱허브 읽기는 정상). `npm run ask -- 찾기 애드몹` 성공 → wrangler 로그인(`~/.config/kigle-wrangler`)은 이 노트북에도 있음.
+  - `.env`를 만들고 `DISCORD_CHANNEL_ID`(#agent `1568932139708190910`)만 채움. `ANTHROPIC_API_KEY`, `DISCORD_BOT_TOKEN`은 비어 있음.
+  - Claude의 자동 권한 검사가 투닥 아레나 `.env`에서 API 키 옮기는 걸 막음 → 키는 사용자가 직접 넣기로.
+  - **Hermes는 새로 설치하지 않고 이미 있는 걸 같이 씀**: `hermes-agent`는 투닥 아레나 작업 폴더의 Hermes(`../tudak-arena/.claude/worktrees/folder-work-review-7b053a/day6/homework/tudak-arena/hermes-agent`, e534ed0, 디스코드 패키지 설치됨)를 가리키는 링크. 데이터(`hermes-home/`)는 이 폴더에 따로. `npm run hermes -- --version` 정상.
+    - 그 작업 폴더를 지우면 허브집사도 안 켜짐 → 그때는 README 2단계로 이 폴더에 직접 설치.
+    - 링크는 `.gitignore`의 `hermes-agent/`에 안 걸려서 `/`를 뺌.
+    - 참고: `~/.local/bin/hermes`는 없어진 `~/Documents/kg-kdh-agent`를 가리켜서 안 됨.
+  - 이 노트북의 투닥 아레나 봇 3개(8651~8653)는 같은 Hermes로 돌고 있음. 허브집사 8661과 안 겹침.
+  - 처음 `setup-hermes`가 `No module named 'ruamel'`로 실패: 이 Hermes는 **데이터 폴더마다 패키지 환경을 따로 둠**(`<HERMES_HOME>/installs/<설치키>`, `pm/environments.py`). 새 `hermes-home`엔 그게 없었음.
+    → `hermes-home/installs/7b16130431893402`를 투닥 아레나 `hermes-home/installs/7b16130431893402`로 가는 링크로 만들어 패키지 환경(디스코드 포함)을 같이 씀. 프로필·대화 기록은 이 폴더에 따로.
+  - 사용자가 `.env`에 키 두 개 넣음 → `setup-hermes` 성공 → `npm run bot` → 13:52 **"Connected as KigleApphub_agent#3410", discord connected**, 포트 8661 열림.
+  - 13:54 디스코드에서 "식충식물 기획서 문서 보여줘" → `mcp__apphub__find_links`로 대답(19초). 투닥 아레나 봇 3개도 그대로 켜져 있고, 같이 쓰는 패키지 환경에 새로 깔린 것 없음.
+
 ## 다음 할 일
-1. (선택) Developer Portal에서 봇 이름을 허브집사로, Public Bot 끄기
-2. 봇을 계속 켜 두려면 사용자 터미널에서 `npm run bot` (지금은 Claude 세션의 백그라운드 작업으로 켜져 있음)
+1. 봇은 지금 Claude 세션의 백그라운드 작업으로 켜져 있음. 계속 켜 두려면 사용자 터미널에서 `npm run bot`
+2. 옛 노트북에서 봇이 켜져 있으면 끄기(둘 다 켜져 있으면 대답이 두 번 감)
+3. (선택) Developer Portal에서 봇 이름을 허브집사로, Public Bot 끄기
