@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent 강의 결과 발표</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --bg: #f6f3ec;
+    --ink: #1b1a17;
+    --sub: #6b665c;
+    --line: #dcd6c8;
+    --card: #fffdf8;
+    --accent: #1b1a17;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.5; word-break: keep-all; -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  section {
+    min-height: 100vh; scroll-snap-align: start;
+    padding: clamp(24px, 4.5vh, 56px) clamp(20px, 5vw, 88px);
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative;
+  }
+
+  /* 첫 화면 */
+  .hero .eyebrow { font-size: clamp(14px, 1.3vw, 20px); font-weight: 600; color: var(--sub); letter-spacing: .04em; }
+  .hero h1 { font-size: clamp(30px, 5.4vw, 104px); font-weight: 800; line-height: 1.08; letter-spacing: -.03em; margin: .25em 0 .35em; }
+  .hero h1 em { font-style: normal; background: linear-gradient(transparent 62%, #ffd84d 62%); }
+  .hero .who { font-size: clamp(16px, 1.5vw, 24px); color: var(--sub); }
+  .hero .who b { color: var(--ink); font-weight: 700; }
+  .hero .who + .who { margin-top: .3em; }
+  .hint { position: absolute; bottom: 28px; left: clamp(20px, 5vw, 88px); font-size: 14px; color: var(--sub); }
+  kbd { border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 1px 7px; font: inherit; font-size: 13px; }
+
+  /* 한눈에 보기 */
+  .section-title { font-size: clamp(26px, 3vw, 44px); font-weight: 800; letter-spacing: -.02em; margin-bottom: clamp(16px, 3vh, 32px); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(12px, 1.6vw, 24px); }
+  .tile {
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+    text-decoration: none; display: flex; flex-direction: column; transition: transform .2s, box-shadow .2s;
+  }
+  .tile:hover, .tile:focus-visible { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(40, 30, 10, .12); outline: none; }
+  .tile img { width: 100%; height: clamp(90px, 20vh, 230px); object-fit: cover; object-position: top; display: block; border-bottom: 1px solid var(--line); }
+  .tile .t-body { padding: 14px 18px 16px; }
+  .tile .t-num { font-size: 13px; font-weight: 700; color: var(--c); }
+  .tile .t-name { font-size: clamp(17px, 1.5vw, 22px); font-weight: 800; letter-spacing: -.01em; }
+  .tile .t-tag { font-size: 14px; color: var(--sub); margin-top: 2px; }
+
+  /* 작업물 한 장 */
+  .project { --accent: #333; }
+  .p-top { display: grid; grid-template-columns: 1.08fr 1fr; gap: clamp(20px, 3.4vw, 60px); align-items: center; }
+  .shot { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #fff; box-shadow: 0 18px 40px rgba(40, 30, 10, .14); }
+  .shot .bar { height: 30px; background: #ece7db; display: flex; align-items: center; gap: 6px; padding: 0 12px; }
+  .shot .bar i { width: 10px; height: 10px; border-radius: 50%; background: #cfc8b7; }
+  .shot img { width: 100%; display: block; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; max-height: 46vh; }
+  .p-num { font-size: clamp(14px, 1.2vw, 18px); font-weight: 800; color: var(--accent); letter-spacing: .06em; display: flex; gap: 10px; align-items: center; }
+  .badge { font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 99px; padding: 1px 10px; }
+  .p-name { font-size: clamp(32px, 4.2vw, 68px); font-weight: 800; letter-spacing: -.03em; line-height: 1.12; margin: .12em 0 .15em; }
+  .p-tagline { font-size: clamp(16px, 1.45vw, 23px); color: var(--sub); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+  .tags span { font-size: 13px; font-weight: 600; background: color-mix(in srgb, var(--accent) 13%, var(--bg)); border-radius: 99px; padding: 3px 12px; }
+  .features { list-style: none; display: grid; gap: 6px; font-size: clamp(14px, 1.15vw, 18px); }
+  .features li { padding-left: 20px; position: relative; }
+  .features li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
+  .ai { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .ai h3 { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: .04em; margin-bottom: 6px; }
+  .ai dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; font-size: clamp(13px, 1vw, 16px); }
+  .ai dt { font-weight: 700; white-space: nowrap; }
+  .ai dd { color: var(--sub); }
+  .ai-note { font-size: 12.5px; color: #9a9485; margin-top: 6px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
+    background: var(--ink); color: #fff; text-decoration: none; font-weight: 700;
+    font-size: clamp(14px, 1.1vw, 17px); border-radius: 12px; padding: 11px 20px; transition: background .2s;
+  }
+  .btn:hover, .btn:focus-visible { background: var(--accent); outline: none; }
+  .btn.plain { background: transparent; color: var(--sub); border: 1.5px dashed var(--line); cursor: default; }
+  .btn small { font-weight: 500; opacity: .7; }
+
+  .reflect { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(10px, 1.4vw, 20px); margin-top: clamp(18px, 3.4vh, 36px); }
+  .r-card { background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: 14px; padding: 14px 18px 16px; min-height: 110px; }
+  .r-card h3 { font-size: clamp(15px, 1.2vw, 19px); font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .r-card p { font-size: clamp(14px, 1.1vw, 17px); }
+  .r-card p.empty { color: #b3ad9f; }
+  .r-card ul { list-style: none; display: grid; gap: 4px; font-size: clamp(14px, 1.1vw, 17px); }
+  .r-card li { padding-left: 14px; position: relative; }
+  .r-card li::before { content: ""; position: absolute; left: 1px; top: .68em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  .draft { font-size: 11px; font-weight: 700; color: #a8660a; background: #ffe9b8; border-radius: 6px; padding: 1px 7px; }
+
+  /* 마지막 장 */
+  .closing ol { list-style: none; counter-reset: n; display: grid; gap: 14px; max-width: 900px; margin-bottom: 6vh; }
+  .closing li { counter-increment: n; font-size: clamp(18px, 2vw, 30px); font-weight: 700; padding-left: 2em; position: relative; }
+  .closing li::before { content: counter(n); position: absolute; left: 0; top: .1em; width: 1.4em; height: 1.4em; border-radius: 50%; background: var(--ink); color: #fff; font-size: .75em; display: grid; place-items: center; }
+  .closing li.empty { color: #b3ad9f; font-weight: 500; }
+  .closing .thanks { font-size: clamp(40px, 6vw, 96px); font-weight: 800; letter-spacing: -.03em; }
+
+  /* 오른쪽 점 메뉴 */
+  nav.dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 10; }
+  nav.dots button { width: 10px; height: 10px; border-radius: 50%; border: 0; background: #cfc8b7; cursor: pointer; padding: 0; transition: transform .2s, background .2s; }
+  nav.dots button.on { background: var(--ink); transform: scale(1.5); }
+  .counter { position: fixed; right: 18px; bottom: 16px; font-size: 13px; color: var(--sub); font-variant-numeric: tabular-nums; z-index: 10; }
+
+  /* 낮은 화면(노트북 1280×720 등)에서 한 장에 다 들어가게 조금씩 줄임 */
+  @media (max-height: 860px) and (min-width: 861px) {
+    section { padding-top: 18px; padding-bottom: 18px; }
+    .p-name { font-size: clamp(28px, 3.4vw, 52px); }
+    .tags { margin: 8px 0; }
+    .features { gap: 2px; }
+    .ai { margin-top: 8px; padding-top: 8px; }
+    .ai dl { gap: 1px 12px; font-size: 13px; }
+    .ai-note { display: none; }
+    .btn { margin-top: 10px; padding: 9px 18px; }
+    .shot img { max-height: 40vh; }
+    .reflect { margin-top: 14px; }
+    .r-card { padding: 11px 16px 12px; min-height: 0; }
+    .r-card ul { gap: 2px; font-size: 14px; }
+  }
+  @media (max-width: 860px) {
+    html { scroll-snap-type: none; }
+    section { min-height: auto; padding-top: 48px; padding-bottom: 48px; }
+    .hero { min-height: 100vh; }
+    .grid, .p-top, .reflect { grid-template-columns: 1fr; }
+    nav.dots, .counter, .hint { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .tile, .btn { transition: none; } }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav class="dots" id="dots" aria-label="장 이동"></nav>
+<div class="counter" id="counter"></div>
+
+<script src="content.js"></script>
+<script>
+(function () {
+  const R = window.REPORT;
+  const app = document.getElementById("app");
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const pad = (n) => String(n).padStart(2, "0");
+  document.title = R.title;
+
+  const titleHtml = esc(R.title).replace("AI", "<em>AI</em>");
+  let html = `
+  <section class="hero" data-name="시작">
+    <p class="eyebrow">${esc(R.course)}</p>
+    <h1>${titleHtml}</h1>
+    <p class="who">${esc(R.period)}</p>
+    <p class="who"><b>${esc(R.presenter.split(" · ")[0])}</b>${R.presenter.includes(" · ") ? " · " + esc(R.presenter.split(" · ").slice(1).join(" · ")) : ""}</p>
+    <p class="hint"><kbd>↓</kbd> <kbd>스페이스</kbd> 다음 장 · <kbd>↑</kbd> 이전 장</p>
+  </section>
+
+  <section data-name="한눈에 보기">
+    <h2 class="section-title">작업물 ${R.projects.length}개</h2>
+    <div class="grid">
+      ${R.projects.map((p, i) => `
+      <a class="tile" href="#${p.id}" style="--c:${p.color}">
+        <img src="${p.image}" alt="${esc(p.name)} 화면">
+        <div class="t-body">
+          <div class="t-num">${pad(i + 1)}${p.badge ? " · " + esc(p.badge) : ""}</div>
+          <div class="t-name">${esc(p.name)}</div>
+          <div class="t-tag">${esc(p.tagline)}</div>
+        </div>
+      </a>`).join("")}
+    </div>
+  </section>`;
+
+  const rich = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  const reflectCard = (title, r) => {
+    const lines = !r || !r.text ? [] : Array.isArray(r.text) ? r.text.filter(Boolean) : [r.text];
+    const has = lines.length > 0;
+    return `<div class="r-card">
+      <h3>${esc(title)}${has && r.draft ? '<span class="draft">초안</span>' : ""}</h3>
+      ${has ? `<ul>${lines.map((l) => `<li>${rich(l)}</li>`).join("")}</ul>` : '<p class="empty">직접 채울 자리</p>'}
+    </div>`;
+  };
+
+  R.projects.forEach((p, i) => {
+    const link = p.link && p.link.url
+      ? `<a class="btn" href="${p.link.url}" target="_blank" rel="noopener">${esc(p.link.label)} ↗ <small>${esc(p.link.url.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</small></a>`
+      : `<span class="btn plain">${esc(p.link ? p.link.label : "링크 없음")}</span>`;
+    html += `
+  <section class="project" id="${p.id}" data-name="${esc(p.name)}" style="--accent:${p.color}">
+    <div class="p-top">
+      <div class="shot"><div class="bar"><i></i><i></i><i></i></div><img src="${p.image}" alt="${esc(p.name)} 화면"></div>
+      <div>
+        <div class="p-num">${pad(i + 1)} / ${pad(R.projects.length)}${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}</div>
+        <h2 class="p-name">${esc(p.name)}</h2>
+        <p class="p-tagline">${esc(p.tagline)}</p>
+        <div class="tags">${p.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
+        <ul class="features">${p.features.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
+        ${p.ai ? `<div class="ai">
+          <h3>${esc(p.aiTitle || "들어간 AI")}</h3>
+          <dl>${p.ai.map(([n, u]) => `<dt>${esc(n)}</dt><dd>${esc(u)}</dd>`).join("")}</dl>
+          ${p.aiNote ? `<p class="ai-note">${esc(p.aiNote)}</p>` : ""}
+        </div>` : ""}
+        ${link}
+      </div>
+    </div>
+    <div class="reflect">
+      ${reflectCard(R.reflectionTitles.intent, p.intent)}
+      ${reflectCard(R.reflectionTitles.good, p.good)}
+      ${reflectCard(R.reflectionTitles.limit, p.limit)}
+    </div>
+  </section>`;
+  });
+
+  html += `
+  <section class="closing" data-name="마무리">
+    <h2 class="section-title">${esc(R.closing.title)}</h2>
+    <ol>${R.closing.points.map((t) => `<li class="${t ? "" : "empty"}">${t ? esc(t) : "직접 채울 자리"}</li>`).join("")}</ol>
+    <p class="thanks">${esc(R.closing.thanks)}</p>
+  </section>`;
+
+  app.innerHTML = html;
+
+  // 장 이동: 점 메뉴, 방향키, 스페이스
+  const sections = [...document.querySelectorAll("section")];
+  const dots = document.getElementById("dots");
+  const counter = document.getElementById("counter");
+  let current = 0;
+
+  sections.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.title = s.dataset.name;
+    b.setAttribute("aria-label", s.dataset.name);
+    b.onclick = () => go(i);
+    dots.appendChild(b);
+  });
+
+  function go(i) {
+    i = Math.max(0, Math.min(sections.length - 1, i));
+    sections[i].scrollIntoView();
+  }
+  function mark(i) {
+    current = i;
+    [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i));
+    counter.textContent = `${i + 1} / ${sections.length}`;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) mark(sections.indexOf(e.target)); });
+  }, { threshold: 0.55 });
+  sections.forEach((s) => io.observe(s));
+  mark(0);
+
+  // 주소 끝에 #russo 처럼 붙여서 열면 그 장부터 보여 줘요
+  if (location.hash) {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView({ behavior: "instant" });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (["ArrowDown", "ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); go(current + 1); }
+    else if (["ArrowUp", "ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); go(current - 1); }
+    else if (e.key === "Home") { e.preventDefault(); go(0); }
+    else if (e.key === "End") { e.preventDefault(); go(sections.length - 1); }
+  });
+})();
+</script>
+</body>
+</html>
