@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Jua&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="burger.css">
+  <link rel="stylesheet" href="songbook.css">
 </head>
 <body>
   <header class="top">
@@ -18,11 +19,18 @@
       <img class="brand-burger" src="img/logo-burger.svg" alt="">
       <span class="brand-text"><span class="brand-top">Show me the</span><span class="brand-main">BURGER</span></span>
     </h1>
+    <nav class="tabs" role="tablist" aria-label="화면">
+      <button type="button" role="tab" id="tabGame" aria-selected="true" aria-controls="gameView">🍔 게임</button>
+      <button type="button" role="tab" id="tabSongs" aria-selected="false" aria-controls="songbook">🎧 랩 모음</button>
+    </nav>
     <div id="progress" class="progress"></div>
     <span id="discord" class="pill">디스코드 확인 중</span>
   </header>
 
-  <main class="layout">
+  <!-- 랩 모음 탭: 처음 열 때 songbook.js가 채운다 -->
+  <section id="songbook" class="songbook-view" role="tabpanel" aria-labelledby="tabSongs" hidden></section>
+
+  <main id="gameView" class="layout" role="tabpanel" aria-labelledby="tabGame">
     <div id="stageWrap" class="stage-wrap">
       <div id="stage" class="stage">
         <canvas id="c" width="1536" height="864"></canvas>
@@ -72,6 +80,7 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="songbook.js"></script>
   <script src="burger.js"></script>
 </body>
 </html>
