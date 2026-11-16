@@ -220,7 +220,7 @@ function draw(now) {
 // ── 랩이 끝난 뒤 (시간 제한 없음) ──
 // 한참 안 찍으면 가끔(20%) 손님이 디스코드에서 재촉 — 손님마다 한 번, 서버가 확률을 정함
 function tickAfter(now) {
-  if (state !== 'after' || hurrySent || askWaiting) return;
+  if (state !== 'after' || hurrySent || askWaiting || songbookOpen) return;
   if (now - afterAt > HURRY_AFTER_MS) { hurrySent = true; socket.emit('burger_hurry'); }
 }
 
@@ -593,6 +593,38 @@ socket.on('status', s => {
   $('discord').textContent = on ? '디스코드 연결됨' : '디스코드 꺼짐 · 말풍선만';
   $('discord').classList.toggle('on', on);
 });
+
+// ── 탭: 게임 / 랩 모음 ──
+// 랩 모음을 보는 동안 게임 소리(랩·손님 목소리)는 멈췄다가, 게임으로 돌아오면 이어서 튼다. 시작·결과 카드도 잠깐 숨긴다.
+// 랩 모음은 처음 열 때 한 번만 그린다. 게임 안이라 주문·가사(정답)는 접어 둔다.
+let songbookOpen = false, songbookReady = null, pausedForSongbook = [], overlayWasOpen = false;
+function showTab(songs) {
+  if (songs) songbookReady ??= Songbook.mount($('songbook'), { fold: true }).catch(() => {
+    songbookReady = null;   // 못 불러왔으면 탭을 다시 누를 때 또 해 봄
+    $('songbook').textContent = '랩 목록을 못 불러왔어요. 탭을 다시 눌러 주세요.';
+  });
+  if (songs === songbookOpen) return;
+  songbookOpen = songs;
+  $('tabGame').setAttribute('aria-selected', String(!songs));
+  $('tabSongs').setAttribute('aria-selected', String(songs));
+  $('gameView').hidden = songs;
+  $('songbook').hidden = !songs;
+  if (songs) {
+    pausedForSongbook = [audio, greetAudio].filter(a => !a.paused && !a.ended);
+    for (const a of pausedForSongbook) a.pause();
+    overlayWasOpen = !$('overlay').hidden;
+    $('overlay').hidden = true;
+    window.scrollTo(0, 0);
+  } else {
+    Songbook.stop($('songbook'));
+    if (overlayWasOpen) $('overlay').hidden = false;
+    for (const a of pausedForSongbook) a.play().catch(() => {});
+    pausedForSongbook = [];
+    if (state === 'after') afterAt = performance.now();   // 다녀온 사이에 바로 재촉하지 않게 다시 잼
+  }
+}
+$('tabGame').onclick = () => showTab(false);
+$('tabSongs').onclick = () => showTab(true);
 
 // ── 시작 ──
 fetch('data/greetings.json').then(r => r.json()).then(g => { greetings = g; }).catch(() => {});

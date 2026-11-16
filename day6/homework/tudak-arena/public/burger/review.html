@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
   <style>
     :root { --bg: #141826; --panel: #1e2336; --line: rgba(255,255,255,.14); --text: #f4f1ea; --muted: #a9adbd; --accent: #ffcf4a; --hot: #ff5fa2;
-      --coco: #FF8FAB; --lovey: #7C8CE6; --rou: #FFA53D; --easy: #5fd38a; --mid: #ffcf4a; --hard: #ff6b6b; }
+      --coco: #FF8FAB; --lovey: #7C8CE6; --rou: #FFA53D; }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Jua', system-ui, sans-serif; padding: 20px 16px 60px; }
     main { max-width: 1100px; margin: 0 auto; }
@@ -25,34 +25,15 @@
     .faces { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
     .faces figure { margin: 0; text-align: center; font-size: 12px; color: var(--muted); }
     .faces img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top; background: #2a3150; border-radius: 8px; }
-    .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-    .filters button { font: inherit; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
-    .filters button.on { border-color: var(--accent); color: var(--accent); }
-    .songs { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
-    .song { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
-    .song header { display: flex; align-items: center; gap: 8px; }
-    .song header img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; object-position: top; background: #2a3150; }
-    .song header b { font-weight: normal; font-size: 18px; }
-    .lv { margin-left: auto; font-size: 13px; padding: 2px 10px; border-radius: 999px; color: #1a1a1a; }
-    .genre { color: var(--muted); font-size: 13px; margin: 4px 0 8px; }
-    .order { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-    .chip { display: flex; align-items: center; gap: 4px; background: #fff4dc; color: #2a2230; border-radius: 999px; padding: 2px 10px 2px 2px; font-size: 14px; }
-    .chip img { width: 26px; height: 26px; border-radius: 50%; }
-    .chip b { color: #d63a7a; font-weight: normal; }
-    .trap { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-    .song audio { width: 100%; height: 36px; margin: 2px 0 6px; }
-    .nosong { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-    .lyr p { margin: 3px 0; color: #d6d8e2; font-size: 15px; line-height: 1.45; }
-    .lyr .tag { font-size: 12px; margin-top: 8px; }
-    mark { background: none; color: var(--hot); }
-    mark.decoy { color: var(--muted); text-decoration: line-through; }
+    #songs { margin-top: 36px; }
     @media (max-width: 760px) { .chars { grid-template-columns: 1fr; } }
   </style>
+  <link rel="stylesheet" href="songbook.css">
 </head>
 <body>
 <main>
   <h1>투닥버거 준비물 확인</h1>
-  <p class="lead">메뉴 15개 · 손님 3명 표정 · 주문 랩 24곡 (보통 14 · 어려움 10, 곡마다 15~20초) · 곡마다 ▶로 들어 보세요</p>
+  <p class="lead">메뉴 · 손님 3명 표정 · 주문 랩 · 곡마다 ▶로 들어 보세요</p>
 
   <h2>메뉴</h2>
   <section id="menu" class="menu"></section>
@@ -60,19 +41,16 @@
   <h2>손님</h2>
   <section id="chars" class="chars"></section>
 
-  <h2 id="songsTitle">주문 랩</h2>
-  <div id="filters" class="filters"></div>
-  <section id="songs" class="songs"></section>
+  <section id="songs"></section>
 </main>
+<script src="songbook.js"></script>
 <script>
   const CHAR = { coco: { name: '코코', color: 'var(--coco)' }, lovey: { name: '러비', color: 'var(--lovey)' }, rou: { name: '루', color: 'var(--rou)' } };
-  const LV = { '쉬움': 'var(--easy)', '보통': 'var(--mid)', '어려움': 'var(--hard)' };
   const CAT = { burger: '버거', side: '사이드', drink: '음료' };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  // faded.json(곡마다 md5)을 주소 뒤에 붙여서, 곡을 다시 만들면 브라우저가 예전 소리를 안 틀게 한다
-  Promise.all([fetch('data/menu.json').then(r => r.json()), fetch('data/songs.json').then(r => r.json()), fetch('songs/faded.json').then(r => r.json()).catch(() => ({}))]).then(([menu, { songs }, ver]) => {
-    const items = Object.fromEntries(Object.values(menu).flat().map(m => [m.id, m]));
+  Songbook.mount(document.getElementById('songs'));   // 주문 랩 (게임 안 "랩 모음" 탭과 같은 화면)
+  fetch('data/menu.json').then(r => r.json()).then(menu => {
     const sayOf = m => m.say.find(s => /[0-9]/.test(m.name) && s !== m.name) ? ` <small>읽기: ${esc(m.say[0])}</small>` : '';
     document.getElementById('menu').innerHTML = Object.entries(menu).map(([cat, list]) =>
       `<div class="cat">${CAT[cat]} ${list.length}개</div>` + list.map(m =>
@@ -82,37 +60,6 @@
     document.getElementById('chars').innerHTML = Object.entries(CHAR).map(([id, c]) =>
       `<div class="char"><h3 style="color:${c.color}">${c.name}</h3><div class="faces">${STATES.map(([s, label]) =>
         `<figure><img src="img/${id}-${s}.png" alt=""><figcaption>${label}</figcaption></figure>`).join('')}</div></div>`).join('');
-
-    const render = filter => {
-      const keep = s => filter === 'all' || s.level === filter || (filter === 'duo' ? s.customers.length > 1 : s.customers.length === 1 && s.customers[0] === filter);
-      document.getElementById('songs').innerHTML = songs.filter(keep).map(s => {
-        const ordered = s.order.map(o => items[o.item]);
-        const words = [...ordered.flatMap(m => m.say.map(w => [w, 'o'])), ...s.decoys.flatMap(d => items[d].say.map(w => [w, 'd']))].sort((a, b) => b[0].length - a[0].length);
-        const re = new RegExp(words.map(([w]) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'gi');
-        const kind = Object.fromEntries(words.map(([w, k]) => [w.toLowerCase(), k]));
-        const hi = line => esc(line).replace(re, w => `<mark class="${kind[w.toLowerCase()] === 'd' ? 'decoy' : ''}">${w}</mark>`);
-        return `<article class="song">
-          <header>${s.customers.map(c => `<img src="img/${c}-base.png" alt="">`).join('')}
-            <b>${s.customers.map(c => `<span style="color:${CHAR[c].color}">${CHAR[c].name}</span>`).join(' + ')}</b>
-            <span class="lv" style="background:${LV[s.level]}">${s.level}</span></header>
-          <div class="genre">${esc(s.id)} · ${esc(s.genre)} · 약 ${Math.round(s.parts.reduce((a, p) => a + p.ms, 0) / 1000)}초</div>
-          <div class="order">${s.order.map(o => `<span class="chip"><img src="img/menu/${o.item}.jpg" alt="">${esc(items[o.item].name)} <b>×${o.qty}</b></span>`).join('')}</div>
-          ${s.decoys.length ? `<div class="trap">함정: ${s.decoys.map(d => esc(items[d].name)).join(', ')} (말만 하고 안 시킴)</div>` : ''}
-          <audio controls preload="none" src="songs/${esc(s.id)}.mp3${ver[s.id] ? `?v=${ver[s.id].slice(0, 8)}` : ''}" onerror="this.outerHTML='<div class=nosong>노래 아직 없음</div>'"></audio>
-          <div class="lyr">${s.parts.filter(p => p.lines.length).map(p =>
-            `<p class="tag" style="color:${CHAR[p.who].color}">[${esc(p.part)}] ${CHAR[p.who].name}</p>` + p.lines.map(l => `<p>${hi(l)}</p>`).join('')).join('')}</div>
-        </article>`;
-      }).join('');
-    };
-    const count = lv => songs.filter(s => s.level === lv).length;
-    const solo = id => songs.filter(s => s.customers.length === 1 && s.customers[0] === id).length;
-    document.getElementById('songsTitle').textContent = `주문 랩 ${songs.length}곡`;
-    const opts = [['all', `전체 ${songs.length}`], ['coco', `코코 ${solo('coco')}`], ['lovey', `러비 ${solo('lovey')}`], ['rou', `루 ${solo('rou')}`], ['duo', `둘이 ${songs.filter(s => s.customers.length > 1).length}`], ['보통', `보통 ${count('보통')}`], ['어려움', `어려움 ${count('어려움')}`]];
-    const box = document.getElementById('filters');
-    box.innerHTML = opts.map(([k, l]) => `<button type="button" data-k="${k}">${l}</button>`).join('');
-    const pick = k => { for (const b of box.children) b.classList.toggle('on', b.dataset.k === k); render(k); };
-    for (const b of box.children) b.onclick = () => pick(b.dataset.k);
-    pick('all');
   });
 </script>
 </body>
