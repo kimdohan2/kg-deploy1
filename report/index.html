@@ -60,6 +60,9 @@
   .shot .bar { height: 30px; background: #ece7db; display: flex; align-items: center; gap: 6px; padding: 0 12px; }
   .shot .bar i { width: 10px; height: 10px; border-radius: 50%; background: #cfc8b7; }
   .shot img { width: 100%; display: block; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; max-height: 46vh; }
+  /* 영상은 자르지 않고 원래 비율 그대로. 화면이 낮으면 창 테두리째 작아짐 */
+  .shot.is-video { width: fit-content; max-width: 100%; }
+  .shot video { display: block; width: auto; height: auto; max-width: 100%; max-height: 46vh; }
   .p-num { font-size: clamp(14px, 1.2vw, 18px); font-weight: 800; color: var(--accent); letter-spacing: .06em; display: flex; gap: 10px; align-items: center; }
   .badge { font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 99px; padding: 1px 10px; }
   .p-name { font-size: clamp(32px, 4.2vw, 68px); font-weight: 800; letter-spacing: -.03em; line-height: 1.12; margin: .12em 0 .15em; }
@@ -95,10 +98,12 @@
   .draft { font-size: 11px; font-weight: 700; color: #a8660a; background: #ffe9b8; border-radius: 6px; padding: 1px 7px; }
 
   /* 마지막 장 */
-  .closing ol { list-style: none; counter-reset: n; display: grid; gap: 14px; max-width: 900px; margin-bottom: 6vh; }
-  .closing li { counter-increment: n; font-size: clamp(18px, 2vw, 30px); font-weight: 700; padding-left: 2em; position: relative; }
-  .closing li::before { content: counter(n); position: absolute; left: 0; top: .1em; width: 1.4em; height: 1.4em; border-radius: 50%; background: var(--ink); color: #fff; font-size: .75em; display: grid; place-items: center; }
-  .closing li.empty { color: #b3ad9f; font-weight: 500; }
+  .closing ul { list-style: none; display: grid; gap: clamp(18px, 3.6vh, 34px); max-width: 1000px; margin-bottom: 6vh; }
+  .closing li { position: relative; padding-left: 1.15em; font-size: clamp(18px, 2vw, 30px); }
+  .closing li::before { content: ""; position: absolute; left: 0; top: calc(.7em - 1.5px); width: .55em; height: 3px; border-radius: 2px; background: var(--ink); }
+  .closing li strong { display: block; font-weight: 800; letter-spacing: -.02em; line-height: 1.4; }
+  .closing li span { display: block; font-size: clamp(14px, 1.2vw, 18px); color: var(--sub); line-height: 1.6; margin-top: 6px; }
+  .closing li span + span { margin-top: 2px; }
   .closing .thanks { font-size: clamp(40px, 6vw, 96px); font-weight: 800; letter-spacing: -.03em; }
 
   /* 오른쪽 점 메뉴 */
@@ -117,7 +122,7 @@
     .ai dl { gap: 1px 12px; font-size: 13px; }
     .ai-note { display: none; }
     .btn { margin-top: 10px; padding: 9px 18px; }
-    .shot img { max-height: 40vh; }
+    .shot img, .shot video { max-height: 40vh; }
     .reflect { margin-top: 14px; }
     .r-card { padding: 11px 16px 12px; min-height: 0; }
     .r-card ul { gap: 2px; font-size: 14px; }
@@ -188,7 +193,9 @@
     html += `
   <section class="project" id="${p.id}" data-name="${esc(p.name)}" style="--accent:${p.color}">
     <div class="p-top">
-      <div class="shot"><div class="bar"><i></i><i></i><i></i></div><img src="${p.image}" alt="${esc(p.name)} 화면"></div>
+      <div class="shot${p.video ? " is-video" : ""}"><div class="bar"><i></i><i></i><i></i></div>${p.video
+        ? `<video src="${p.video}" autoplay muted loop playsinline preload="auto" aria-label="${esc(p.name)} 플레이 영상"></video>`
+        : `<img src="${p.image}" alt="${esc(p.name)} 화면">`}</div>
       <div>
         <div class="p-num">${pad(i + 1)} / ${pad(R.projects.length)}${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}</div>
         <h2 class="p-name">${esc(p.name)}</h2>
@@ -212,10 +219,10 @@
   });
 
   html += `
-  <section class="closing" data-name="마무리">
+  <section class="closing" id="closing" data-name="마무리">
     <h2 class="section-title">${esc(R.closing.title)}</h2>
-    <ol>${R.closing.points.map((t) => `<li class="${t ? "" : "empty"}">${t ? esc(t) : "직접 채울 자리"}</li>`).join("")}</ol>
-    <p class="thanks">${esc(R.closing.thanks)}</p>
+    <ul>${R.closing.points.map((p) => `<li><strong>${rich(p.title)}</strong>${[].concat(p.text || []).map((t) => `<span>${rich(t)}</span>`).join("")}</li>`).join("")}</ul>
+    ${R.closing.thanks ? `<p class="thanks">${esc(R.closing.thanks)}</p>` : ""}
   </section>`;
 
   app.innerHTML = html;

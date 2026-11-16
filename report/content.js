@@ -5,7 +5,7 @@
 
 window.REPORT = {
   // 첫 화면은 위에서부터 course → title(큰 제목) → period → presenter 순서
-  course: "키글 x 하비탄 AI",
+  course: "키글 x 하비탄 AI 강의 2기",
   title: "AI Agent 강의 결과 발표",
   period: "2026.09.29 ~ 2026.11.10",
   presenter: "김도한 · 앱개발팀",
@@ -133,6 +133,7 @@ window.REPORT = {
       name: "UNTRACKED",
       tagline: "눈 덮인 산을 자유롭게 타는 익스트림 스포츠 게임",
       image: "assets/untracked.jpg",
+      video: "assets/untracked.mp4", // 작업물 장에서는 사진 대신 이 영상이 소리 없이 반복 재생돼요 (목록 화면은 사진)
       color: "#e2432c",
       tags: ["Fable 5.2", "GPT Image", "Tripo", "ElevenLabs", "Blender MCP", "three.js"],
       link: { label: "사이트 열기", url: "https://untracked-f2v.pages.dev/" },
@@ -161,14 +162,31 @@ window.REPORT = {
     },
   ],
 
-  // 마지막 장
+  // 마지막 장: 느낀 점. title 은 굵은 큰 글씨, text 는 그 아래 작은 설명(따옴표 하나가 한 줄)
   closing: {
-    title: "6주를 마치며",
+    title: "AI를 하면서 느낀 점",
     points: [
-      "",
-      "",
-      "",
+      {
+        title: "강의 전과 후, 일하는 방식이 달라졌다",
+        text: [
+          "Opus 5.5를 기점으로 AI 활용 비중이 크게 높아짐",
+          "예전엔 불안해서 직접 하던 부분이 점점 줄고, 업무를 어떻게 나눠 맡길지 고민하게 됨",
+        ],
+      },
+      {
+        title: "개발하는 사고방식이 달라지고 있다",
+        text: [
+          "예전엔 자료구조, 알고리즘, 아키텍처를 어떻게 짤지가 고민의 중심이었다면, 이제는 AI를 어떻게 효율적으로 돌릴지도 함께 고민함",
+          "에이전트, 서브에이전트, 스킬, md로 반복 업무를 자동화하는 설계를 고민함",
+        ],
+      },
+      {
+        title: "그래도 마지막 검수는 사람이 해야 한다",
+        text: [
+          "AI 비중이 커질수록 불안도 있음",
+          "AI도 실수할 수 있다는 걸 알기에, 결정과 마지막 검수는 아직 사람이 필요하다고 느낌",
+        ],
+      },
     ],
-    thanks: "감사합니다",
   },
 };
