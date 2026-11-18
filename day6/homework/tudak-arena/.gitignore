@@ -5,3 +5,5 @@ hermes-agent/
 hermes-home/
 # 봇 목소리로 미리 만든 감탄사 (npm run clips로 노트북마다 만듦)
 clips/
+# 서버 없이 올리는 Show me the burger 묶음 (npm run burger-static으로 만듦, .vercel 연결 포함)
+dist/

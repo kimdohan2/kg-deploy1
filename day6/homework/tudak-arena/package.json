@@ -14,6 +14,9 @@
     "burger-songs": "node scripts/burger-songs.js",
     "burger-fade": "node scripts/burger-fade.js",
     "burger-greetings": "node scripts/burger-greetings.js",
+    "burger-reactions": "node scripts/burger-reactions.js",
+    "burger-static": "node scripts/burger-static.js",
+    "burger-deploy": "node scripts/burger-static.js && cd dist/show-me-the-burger && npx vercel deploy --prod --yes",
     "share": "caffeinate -i cloudflared tunnel --url http://localhost:3300"
   },
   "dependencies": {

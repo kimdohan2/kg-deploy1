@@ -6,9 +6,9 @@ import { existsSync, readFileSync } from 'node:fs';
 
 export const TEAMS = 3;          // 한 판 손님 수
 export const MAX_ASKS = 3;       // 손님마다 디스코드로 되물을 수 있는 횟수
-const LEVELS = ['보통', '어려움', '어려움'];   // 한 판 손님 순서: 보통으로 몸 풀고 어려움 둘
+export const LEVELS = ['보통', '어려움', '어려움'];   // 한 판 손님 순서: 보통으로 몸 풀고 어려움 둘
 const HURRY_RATE = 0.2;          // 랩이 끝나고 한참 안 찍을 때 재촉 한마디가 나올 확률 (손님마다)
-const BPM = { '하이퍼 트랩': 155, '파티 트랩': 160, '펑키 힙합': 118, '트랩': 140, '붐뱁': 90, '드릴 배틀': 142, '파티 배틀': 150, '하이퍼 + 붐뱁': 110, '붐뱁 + 하이퍼': 110 };
+export const BPM = { '하이퍼 트랩': 155, '파티 트랩': 160, '펑키 힙합': 118, '트랩': 140, '붐뱁': 90, '드릴 배틀': 142, '파티 배틀': 150, '하이퍼 + 붐뱁': 110, '붐뱁 + 하이퍼': 110 };
 
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const NAMES = { coco: ['코코'], lovey: ['러비'], rou: ['루', 'Rou', '로우'] };   // 디스코드에서 손님을 부를 때

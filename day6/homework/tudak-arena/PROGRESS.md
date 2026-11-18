@@ -1,6 +1,6 @@
 # 진행 상황 (6일차 과제: 투닥 아레나)
 
-> 마지막 갱신: 2026-11-09
+> 마지막 갱신: 2026-11-17
 > 다른 노트북에서 이어서 할 때는 이 문서를 먼저 읽으세요. Claude Code에는 "tudak-arena/PROGRESS.md 읽고 이어서 하자"라고 하면 돼요.
 
 ## 과제와 결정한 것
@@ -26,6 +26,16 @@
 - **디스코드 쪽 준비는 끝났어요**(노트북과 상관없음): 서버 "투닥-봇과함께"에 봇 4개(심판·코코·러비·Rou)를 초대했고, 메시지 콘텐츠 인텐트를 켰어요. 채널은 텍스트 `#투닥-중계`, 음성 `투닥-아레나`예요.
 
 ## 지금 상태
+
+### Show me the burger를 서버 없이 올림 (2026-11-17, 새 노트북)
+- 사용자: "그냥 배포하고 다른 사람들 플레이하게 할 수 있어? 디스코드 부분 빼도 돼". 발표 페이지(kg-ai-report.vercel.app)의 "사이트 열기"가 갈 곳. 그전에는 `npm run share` 임시 주소를 넣었는데, 4시간쯤 뒤 Cloudflare가 끊어서 안 열렸음(프로세스는 살아 있는데 연결 0개, 주소 DNS 사라짐).
+- **고정 주소 https://show-me-the-burger.vercel.app** (Vercel 팀 kigle1, 프로젝트 show-me-the-burger, 정적 사이트). 노트북·봇·키 필요 없음.
+- 만든 것: `burger/static/offline.js`(브라우저 안에서 `server/burger.js` BurgerShop 일을 함: 손님 3팀·다시 듣기·채점, 가짜 socket), `scripts/burger-static.js`(public/burger → `dist/show-me-the-burger/`, socket.io 자리에 offline.js, 서버 코드에서 곡 목록·박자·한마디를 `data/shop.json`으로, 디스코드 안내·"다른 게임"·`#discord`·`#asks` 숨김, 바꿀 글이 정확히 1군데가 아니면 멈춤), `scripts/burger-reactions.js`(FALLBACK 한마디 9개를 봇 목소리로 `voice/react-<봇>-<결과>.mp3`, 28크레딧). npm: `burger-reactions`·`burger-static`·`burger-deploy`. 서버 쪽은 `LEVELS`·`BPM`·`FALLBACK`에 export만 붙임(동작 그대로).
+- 빠진 것: 디스코드 되묻기, Hermes가 즉석에서 만드는 대사(정해 둔 대사 + 목소리), "주문 끝~"·재촉 감탄사(clips 없음). 정답이 화면 코드에 보이는 건 원래도 "랩 모음" 탭에 있어서 같음.
+- 확인: 화면 없는 크롬으로 로컬 묶음과 실제 주소에서 각각 한 판(맞힘 → 틀림 → 다시 듣고 맞힘): 인사말, 결과 3가지, 한마디 목소리, 영업 끝 카드, 랩 모음 탭 모두 정상, 콘솔 오류 없음. mp3 구간 요청 206. `.vercel`·review.html·vc-test는 안 올라감. 사람 귀로 들어 보지는 못함.
+- **주의**: `vercel deploy`가 새 프로젝트를 GitHub 저장소(kg-deploy1)에 자동 연결했음 → `vercel git disconnect`로 끊음. 연결돼 있으면 푸시할 때 저장소 전체가 이 주소로 올라가서 게임이 깨짐.
+- 발표 페이지(report/content.js) 링크를 이 주소로 바꾸고 kg-ai-report에 다시 배포함(report도 GitHub 연결 없음, `report/`에서 `npx vercel deploy --prod`).
+- 이 노트북 상태: `.env`에 ElevenLabs 키만 있음. Hermes·`hermes-home/`·`clips/` 없음 → 봇은 아직 못 켬(디스코드 토큰·Anthropic 키 필요).
 
 ### 다른 노트북으로 옮길 준비 (2026-11-09)
 - 사용자: "내일은 이 맥북에서 작업 안 함". main 푸시(ef34c79, 사용자가 직접 GitHub 로그인). 브랜치 day6-hubjipsa·day6-show-me-the-burger·chatbot-test 모두 main에 들어가 있음(main에 없는 커밋 0).
@@ -374,6 +384,7 @@
   - 친구가 `npm run share` 주소로 들어와서 하는 것
 
 ## 다음 할 일
+0. (2026-11-17) 게임을 고치면 `npm run burger-deploy`로 고정 주소도 다시 올리기. 디스코드 되묻기까지 보여 주려면 이 노트북에 Hermes 설치 + `.env`에 Anthropic 키·디스코드 토큰
 0. (2026-11-07) 사용자가 Show me the burger 직접 해 보기 → 난이도·15초·화면 크기 조절. 친구 시연이면 `npm run share`.
 0. (2026-11-06) 음성방에서 카페 게임 해 보기 → 주문 대사 길이·기다림 35초·코코 주문 바꾸기 빈도 조절
 1. 두 번째 노트북에서 `git pull` → `npm run bots` → 봇 1개로 음성방 소리 확인(위 "음성방 소리 문제")

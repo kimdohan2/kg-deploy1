@@ -1,0 +1,47 @@
+{
+  "voice/react-coco-perfect.mp3": {
+    "text": "완벽해애!",
+    "voice": "6aLvJgKp2AeWprc8jATw",
+    "model": "eleven_v4"
+  },
+  "voice/react-coco-close.mp3": {
+    "text": "두 번 들었지? 헤헷.",
+    "voice": "6aLvJgKp2AeWprc8jATw",
+    "model": "eleven_v4"
+  },
+  "voice/react-coco-wrong.mp3": {
+    "text": "이거 아닌데에!",
+    "voice": "6aLvJgKp2AeWprc8jATw",
+    "model": "eleven_v4"
+  },
+  "voice/react-lovey-perfect.mp3": {
+    "text": "역시 잘하네.",
+    "voice": "DjH4juNj0ukxTe01WKSd",
+    "model": "eleven_v4"
+  },
+  "voice/react-lovey-close.mp3": {
+    "text": "이번만 봐준다.",
+    "voice": "DjH4juNj0ukxTe01WKSd",
+    "model": "eleven_v4"
+  },
+  "voice/react-lovey-wrong.mp3": {
+    "text": "틀렸잖아.",
+    "voice": "DjH4juNj0ukxTe01WKSd",
+    "model": "eleven_v4"
+  },
+  "voice/react-rou-perfect.mp3": {
+    "text": "타이밍 완벽!",
+    "voice": "lJE9ySSAx9W7MBYUOb3S",
+    "model": "eleven_v4"
+  },
+  "voice/react-rou-close.mp3": {
+    "text": "한 번 되감았네?",
+    "voice": "lJE9ySSAx9W7MBYUOb3S",
+    "model": "eleven_v4"
+  },
+  "voice/react-rou-wrong.mp3": {
+    "text": "어라, 틀렸네?",
+    "voice": "lJE9ySSAx9W7MBYUOb3S",
+    "model": "eleven_v4"
+  }
+}

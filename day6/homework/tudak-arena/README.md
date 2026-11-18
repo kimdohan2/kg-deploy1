@@ -115,6 +115,16 @@ npm run setup-hermes
 - 봇은 게임 사건(심판이 부를 때)에만 말해요. 친구가 채팅으로 봇에게 직접 말을 걸면 대답하지 않아요.
 - 봇 대화 비용은 전부 내 Anthropic 키로 나가요. 주소를 아는 사람은 누구나 **봇 수다** 버튼을 켜고 끌 수 있어요.
 
+## 서버 없이 올리기 (Show me the burger만, 디스코드 없이)
+노트북을 꺼도 누구나 플레이할 수 있는 고정 주소예요: **https://show-me-the-burger.vercel.app**
+
+- 게임 서버 대신 브라우저가 손님 고르기·채점을 해요(`burger/static/offline.js`). 게임 원본(`public/burger/`)은 그대로 쓰고, 묶을 때 socket.io 자리에만 이 파일을 끼워요.
+- 주문 완료 한마디는 Hermes 대신 미리 만든 목소리예요(`npm run burger-reactions`, 9개 약 30크레딧). 디스코드 되묻기, "주문 끝~"·재촉 감탄사, "다른 게임" 링크는 없어요.
+- 게임(곡·그림·화면)을 고친 뒤 다시 올리기: `npm run burger-deploy` (Vercel 로그인 필요: `npx vercel login`)
+  - `dist/show-me-the-burger/`에 묶고(`npm run burger-static`) 그 폴더를 Vercel 프로젝트 `kigle1/show-me-the-burger`에 올려요. 이 폴더는 git에 안 올라가요.
+  - 새 노트북이라 `dist/`가 없으면 처음 한 번은 `npm run burger-static` 뒤 `cd dist/show-me-the-burger && npx vercel link --yes --project show-me-the-burger --scope kigle1`로 연결해요.
+  - 이 프로젝트는 GitHub와 연결하지 않아요(연결하면 저장소 전체가 이 주소에 올라가서 게임이 깨져요). Vercel이 묻거나 자동으로 연결하면 `npx vercel git disconnect --yes`.
+
 ## 조절하기
 
 | 바꾸고 싶은 것 | 파일 |

@@ -6,7 +6,7 @@
 // 디스코드는 되묻기(ask)에만 쓴다: 친구가 음성·채팅으로 물으면 손님 봇이 디스코드에서 대답.
 import { existsSync, readFileSync } from 'node:fs';
 
-const FALLBACK = {
+export const FALLBACK = {
   perfect: { coco: '완벽해애!', lovey: '역시 잘하네.', rou: '타이밍 완벽!' },
   close: { coco: '두 번 들었지? 헤헷.', lovey: '이번만 봐준다.', rou: '한 번 되감았네?' },
   wrong: { coco: '이거 아닌데에!', lovey: '틀렸잖아.', rou: '어라, 틀렸네?' },

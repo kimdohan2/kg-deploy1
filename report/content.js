@@ -68,7 +68,7 @@ window.REPORT = {
       image: "assets/burger.jpg",
       color: "#d9a400",
       tags: ["Hermes", "Claude Haiku", "Discord 봇", "ElevenLabs"],
-      link: { label: "사이트 열기", url: "https://phrases-indicators-illinois-lindsay.trycloudflare.com/burger/" },
+      link: { label: "사이트 열기", url: "https://show-me-the-burger.vercel.app/" },
       features: [
         "Hermes(오픈소스 AI 에이전트)로 만든 디스코드 봇 3명(코코·러비·루)이 손님",
         "손님이 자기 목소리로 인사하고 랩으로 주문 (미리 만든 랩 30곡)",
